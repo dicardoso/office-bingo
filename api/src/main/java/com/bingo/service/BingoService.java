@@ -19,15 +19,7 @@ public class BingoService {
     private final BingoCardRepository cardRepository;
     private final AuditLogRepository auditLogRepository;
     private final SimpMessagingTemplate messagingTemplate;
-
-    // Lista de frases (idealmente viria de um DB ou JSON config)
-    private static final List<String> PHRASES = Arrays.asList(
-            "Na minha máquina funciona", "Reinicia o servidor", "É cache",
-            "Caiu a internet", "Conflito no merge", "Falta café",
-            "Vou abrir chamado", "Feature, não bug", "Testou em prod?",
-            "Deploy sexta-feira", "Culpa do estagiário", "Backlog tá cheio",
-            "Reunião que podia ser email", "O Docker morreu", "Git blame"
-    );
+    private final BingoPhraseRepository phraseRepository;
 
     public BingoCard getOrCreateDailyCard(User user) {
         LocalDate today = LocalDate.now();
@@ -36,14 +28,28 @@ public class BingoService {
     }
 
     private BingoCard createNewCard(User user, LocalDate date) {
-        List<String> shuffled = new ArrayList<>(PHRASES);
-        Collections.shuffle(shuffled);
+        List<BingoPhrase> availablePhrases = phraseRepository.findByActiveTrue();
+        if (availablePhrases.size() < 9) {
+            throw new IllegalStateException("Não há frases suficientes cadastradas no banco para gerar uma cartela!");
+        }
+        List<String> shuffledPhrases = new ArrayList<>(availablePhrases.stream()
+                .map(BingoPhrase::getText)
+                .toList());
 
+        Collections.shuffle(shuffledPhrases);
+
+        BingoCard card = getBingoCard(user, date, shuffledPhrases);
+
+        logAction(user.getId(), "CREATE_CARD", "Data: " + date);
+        return cardRepository.save(card);
+    }
+
+    private static BingoCard getBingoCard(User user, LocalDate date, List<String> shuffledPhrases) {
         List<BingoCard.Slot> slots = new ArrayList<>();
         for (int i = 0; i < 9; i++) {
             BingoCard.Slot slot = new BingoCard.Slot();
             slot.setPosition(i);
-            slot.setPhrase(shuffled.get(i));
+            slot.setPhrase(shuffledPhrases.get(i));
             slot.setMarked(false);
             slots.add(slot);
         }
@@ -54,9 +60,7 @@ public class BingoService {
         card.setGameDate(date);
         card.setSlots(slots);
         card.setMarkedCount(0);
-
-        logAction(user.getId(), "CREATE_CARD", "Data: " + date);
-        return cardRepository.save(card);
+        return card;
     }
 
     public BingoCard markSlot(User user, int position) {

@@ -20,7 +20,7 @@ public class BingoCard {
 
     @Data
     public static class Slot {
-        private int position; // 0-8
+        private int position;
         private String phrase;
         private boolean marked;
     }
