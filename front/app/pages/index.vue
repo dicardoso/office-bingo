@@ -198,6 +198,7 @@ const handleWinner = (winner) => {
     if (Date.now() < end) requestAnimationFrame(frame)
   }())
   
+  play('win')
   setTimeout(() => lastWinner.value = null, 6000)
 }
 
