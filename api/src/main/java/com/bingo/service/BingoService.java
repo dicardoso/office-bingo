@@ -87,24 +87,37 @@ public class BingoService {
 
         if (changed) {
             boolean isBingoNow = checkWinCondition(card);
-            boolean wasCompletedBefore = card.isCompleted();
 
-            if (isBingoNow && !wasCompletedBefore) {
-                logAction(user.getId(), "BINGO_WIN", "Ganhou o jogo!");
+            if (isBingoNow) {
+                boolean canNotify = card.getLastWinNotification() == null ||
+                        card.getLastWinNotification().isBefore(LocalDateTime.now().minusMinutes(1));
 
-                WinnerNotification winner = new WinnerNotification(
-                        user.getUsername(),
-                        "BINGO! " + user.getUsername() + " fechou a cartela!",
-                        LocalDateTime.now().toString()
-                );
-                messagingTemplate.convertAndSend("/topic/winners", winner);
+                if (canNotify) {
+                    card.setLastWinNotification(LocalDateTime.now());
+
+                    logAction(user.getId(), "BINGO_WIN_BROADCAST", "Ganhou e notificou a galera!");
+
+                    WinnerNotification winner = new WinnerNotification(
+                            user.getUsername(),
+                            "BINGO! " + user.getUsername() + " fechou a cartela!",
+                            LocalDateTime.now().toString()
+                    );
+                    messagingTemplate.convertAndSend("/topic/winners", winner);
+                } else {
+                    logAction(user.getId(), "BINGO_WIN_SILENT", "Ganhou (em cooldown)");
+                }
             }
 
             card.setCompleted(isBingoNow);
 
             BingoCard saved = cardRepository.save(card);
 
-            ProgressUpdate update = new ProgressUpdate(user.getId(), user.getUsername(), saved.getMarkedCount());
+            ProgressUpdate update = new ProgressUpdate(
+                    user.getId(),
+                    user.getUsername(),
+                    saved.getMarkedCount(),
+                    saved.isCompleted()
+            );
             messagingTemplate.convertAndSend("/topic/progress", update);
 
             return saved;

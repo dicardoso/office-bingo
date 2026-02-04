@@ -6,12 +6,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Service
 public class JwtService {
     @Value("${bingo.jwt.secret}")
     private String secret;
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
     private SecretKey getSignKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
@@ -20,10 +24,17 @@ public class JwtService {
     public String generateToken(String username) {
         return Jwts.builder()
                 .subject(username)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+                .issuedAt(new Date())
+                .expiration(getEndOfDay())
                 .signWith(getSignKey())
                 .compact();
+    }
+
+    private Date getEndOfDay() {
+        return Date.from(LocalDate.now(zoneId)
+                .atTime(LocalTime.MAX)
+                .atZone(zoneId)
+                .toInstant());
     }
 
     public String extractUsername(String token) {

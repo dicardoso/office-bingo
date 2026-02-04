@@ -37,4 +37,12 @@ public class GameController {
     public List<BingoCard> getLeaderboard() {
         return bingoService.getDailyLeaderboard();
     }
+
+    @GetMapping("/card/{username}")
+    public BingoCard getUserCard(@PathVariable String username) {
+        User targetUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return bingoService.getOrCreateDailyCard(targetUser);
+    }
 }
