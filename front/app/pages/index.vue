@@ -7,6 +7,11 @@
           <div class="flex items-center gap-2 mb-1">
             <CodeBracketIcon class="w-6 h-6 text-ide-dim" />
             <span class="text-xs font-mono text-ide-dim">~/workspace/games/bingo</span>
+
+            <div class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-ide-dim/10 border border-ide-dim/20 ml-2">
+              <TagIcon class="w-3 h-3 text-ide-accent" />
+              <span class="text-[10px] font-mono font-bold text-ide-accent">{{ appVersion }}</span>
+            </div>
           </div>
           <h1 class="text-2xl md:text-3xl font-bold font-mono text-ide-accent">
             ./run_bingo.sh
@@ -21,7 +26,6 @@
             </span>
           </div>
 
-          
           <div class="flex items-center gap-3">
             <div class="text-right">
               <div class="text-sm font-bold text-white">{{ currentUser.username }}</div>
@@ -33,6 +37,7 @@
           </div>
         </div>
       </header>
+
       <transition 
         enter-active-class="transform transition duration-500 ease-out" 
         enter-from-class="-translate-y-full opacity-0"
@@ -56,14 +61,14 @@
         
         <main class="lg:col-span-2 space-y-4">
           <div class="bg-ide-panel rounded-lg border border-ide-border shadow-xl overflow-hidden">
-            <div class="bg-ide-bg px-4 py-2 border-b border-ide-border flex justify-between items-center">
+             <div class="bg-ide-bg px-4 py-2 border-b border-ide-border flex justify-between items-center">
               <span class="text-xs font-mono text-ide-dim">daily_ticket.json</span>
               <span v-if="card?.completed" class="text-xs font-bold text-yellow-400 font-mono animate-pulse">[ STATUS: COMPLETED ]</span>
               <span v-else class="text-xs font-mono text-ide-dim">[ READ-WRITE ]</span>
             </div>
 
             <div v-if="isLoading" class="p-12 flex justify-center text-ide-accent">
-              <svg class="animate-spin h-8 w-8" viewBox="0 0 24 24">
+               <svg class="animate-spin h-8 w-8" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -102,18 +107,31 @@
             <div 
               v-for="(player, index) in leaderboard" 
               :key="index"
-              class="flex items-center gap-3 p-2 rounded hover:bg-ide-bg/50 transition-colors"
-              :class="{'bg-yellow-500/10 border border-yellow-500/20': index === 0}"
+              @click="inspectPlayer(player)" 
+              class="flex items-center gap-3 p-2 rounded transition-colors cursor-pointer group"
+              :class="[
+                index === 0 ? 'bg-yellow-500/5 border border-yellow-500/20' : 'hover:bg-ide-bg/50 border border-transparent hover:border-ide-dim/30',
+                player.markedCount === 9 ? 'bg-green-500/5 border-l-2 border-l-ide-success' : ''
+              ]"
             >
-              <div class="font-mono text-ide-dim w-6 text-right">#{{ index + 1 }}</div>
+              <div class="font-mono text-ide-dim w-6 text-right group-hover:text-ide-accent">#{{ index + 1 }}</div>
               
               <div class="flex-1">
-                <div class="flex justify-between text-sm mb-1">
-                  <span class="font-bold text-white">{{ player.username }}</span>
+                <div class="flex justify-between items-center text-sm mb-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold group-hover:underline decoration-ide-dim underline-offset-2" :class="player.markedCount === 9 ? 'text-yellow-400' : 'text-white'">
+                      {{ player.username }}
+                    </span>
+                    <div v-if="player.completed" class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-yellow-400/10 border border-yellow-400/50 text-yellow-400 text-[10px] font-mono font-bold uppercase">
+                      <TrophyIcon class="w-3 h-3" />
+                    </div>
+                  </div>
+
                   <span class="font-mono" :class="player.markedCount === 9 ? 'text-yellow-400' : 'text-ide-dim'">
                     {{ player.markedCount }}/9
                   </span>
                 </div>
+                
                 <div class="h-1.5 w-full bg-ide-bg rounded-full overflow-hidden">
                   <div 
                     class="h-full bg-ide-accent transition-all duration-500 ease-out relative"
@@ -123,23 +141,72 @@
                 </div>
               </div>
             </div>
-
-            <div v-if="leaderboard.length === 0" class="text-center py-4 text-ide-dim text-sm italic font-mono">
-              // No logs found yet...
+            
+             <div v-if="leaderboard.length > 0" class="mt-4 text-[10px] text-center text-ide-dim font-mono">
+                [ CLICK ON USER TO CODE REVIEW ]
             </div>
           </div>
         </aside>
 
       </div>
     </div>
+
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      leave-active-class="transition duration-150 ease-in"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div v-if="inspectedCard" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" @click.self="closeInspection">
+        <div class="bg-ide-panel w-full max-w-lg rounded-lg border border-ide-border shadow-2xl overflow-hidden">
+          
+          <div class="bg-ide-bg px-4 py-3 border-b border-ide-border flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <CodeBracketIcon class="w-5 h-5 text-ide-accent" />
+                <span class="font-mono font-bold text-white">Reviewing: {{ inspectedUser }}</span>
+            </div>
+            <button @click="closeInspection" class="text-ide-dim hover:text-white">
+                <span class="font-mono text-xs">[ ESC ]</span>
+            </button>
+          </div>
+
+          <div class="p-6">
+            <div v-if="loadingInspection" class="flex justify-center py-8">
+                <svg class="animate-spin h-8 w-8 text-ide-dim" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+            <div v-else class="grid grid-cols-3 gap-3">
+                <div 
+                    v-for="slot in inspectedCard.slots" 
+                    :key="slot.position"
+                    class="aspect-square rounded border flex items-center justify-center p-2 text-center text-xs select-none"
+                    :class="slot.marked 
+                        ? 'bg-ide-success/5 border-ide-success/50 text-ide-success line-through opacity-80' 
+                        : 'bg-ide-bg border-ide-border text-ide-dim opacity-50'"
+                >
+                    {{ slot.phrase }}
+                </div>
+            </div>
+          </div>
+          
+          <div class="bg-ide-bg px-4 py-2 border-t border-ide-border text-center">
+             <span class="text-[10px] font-mono text-ide-dim">READ-ONLY MODE enabled</span>
+          </div>
+        </div>
+      </div>
+    </transition>
+
   </div>
 </template>
 <script setup>
 import SockJS from 'sockjs-client'
 import Stomp from 'webstomp-client'
 import confetti from 'canvas-confetti'
-import { TrophyIcon, ArrowRightOnRectangleIcon, CodeBracketIcon } from '@heroicons/vue/24/outline'
+import { TrophyIcon, ArrowRightOnRectangleIcon, CodeBracketIcon, TagIcon } from '@heroicons/vue/24/outline'
 import { useSound } from '@/composables/useSound';
+import {version} from '../../package.json'
 
 const { play } = useSound()
 const api = useAPI()
@@ -152,8 +219,14 @@ const socketConnected = ref(false)
 const lastWinner = ref(null)
 const isLoading = ref(true)
 
+const inspectedCard = ref(null)
+const inspectedUser = ref('')
+const loadingInspection = ref(false)
+
+const appVersion = version
+
 const connectSocket = () => {
-  const socket = new SockJS('http://localhost:8080/ws')
+  const socket = new SockJS('http://172.16.155.182:8080/ws')
   const stompClient = Stomp.over(socket)
   
   stompClient.debug = () => {}
@@ -181,11 +254,13 @@ const connectSocket = () => {
 }
 
 const updateLeaderboardLocal = (update) => {
+  console.log(update)
   const player = leaderboard.value.find(u => u.username === update.username)
   if (player) {
     player.markedCount = update.markedCount
+    player.completed = update.completed
   } else {
-    leaderboard.value.push({ username: update.username, markedCount: update.markedCount })
+    leaderboard.value.push({ username: update.username, markedCount: update.markedCount, completed: update.completed })
   }
   leaderboard.value.sort((a, b) => b.markedCount - a.markedCount)
 }
@@ -234,6 +309,31 @@ const toggleSlot = async (slot) => {
     slot.marked = originalState
     alert('Erro de sincronização. Tente novamente.')
   }
+}
+
+const closeInspection = () => {
+    inspectedCard.value = null
+    inspectedUser.value = ''
+}
+
+const inspectPlayer = async (player) => {
+    if (player.username === currentUser.value.username) return;
+
+    inspectedUser.value = player.username
+    inspectedCard.value = { slots: [] }
+    loadingInspection.value = true
+    
+    try {
+        const data = await api(`/game/card/${player.username}`)
+        inspectedCard.value = data
+    } catch (e) {
+        console.error("Erro ao inspecionar", e)
+        console.log(e)
+        alert("Não foi possível carregar o código fonte deste usuário.")
+        closeInspection()
+    } finally {
+        loadingInspection.value = false
+    }
 }
 
 const logout = () => {
