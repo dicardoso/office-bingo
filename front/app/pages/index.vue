@@ -26,15 +26,33 @@
             </span>
           </div>
 
-          <div class="flex items-center gap-3">
-            <div class="text-right">
-              <div class="text-sm font-bold text-white">{{ currentUser.username }}</div>
-              <div class="text-[10px] font-mono text-ide-dim uppercase">{{ currentUser.position || 'Dev' }}</div>
+          <div class="flex items-center gap-4">
+          <div class="text-right hidden sm:block">
+            <div class="text-sm font-bold text-white">{{ currentUser.username }}</div>
+            
+            <div class="flex items-center gap-2 justify-end mt-0.5">
+              <span class="text-[10px] font-mono text-ide-accent uppercase tracking-wider">
+                {{ currentUser.position || 'Estagiário' }}
+              </span>
+              <div class="w-16 h-1.5 bg-ide-dim/20 rounded-full overflow-hidden border border-ide-dim/30" :title="`XP: ${currentUser.careerXp || 0} / ${levelInfo.limit}`">
+                <div 
+                  class="h-full bg-ide-accent transition-all duration-500 ease-out" 
+                  :style="{ width: levelInfo.percent + '%' }"
+                ></div>
+              </div>
             </div>
-            <button @click="logout" class="p-2 hover:bg-ide-panel rounded-full text-red-400 transition-colors" title="Exit Process">
+          </div>
+
+          <div class="flex items-center gap-1 bg-ide-bg rounded-full border border-ide-border p-1">
+            <button @click="openProfile" class="p-2 hover:bg-ide-panel rounded-full text-ide-dim hover:text-white transition-colors" title="View Profile Stats">
+              <UserCircleIcon class="w-5 h-5" />
+            </button>
+            <div class="w-px h-4 bg-ide-border mx-1"></div>
+            <button @click="logout" class="p-2 hover:bg-ide-panel rounded-full text-red-400 hover:bg-red-400/10 transition-colors" title="Exit Process">
               <ArrowRightOnRectangleIcon class="w-5 h-5" />
             </button>
           </div>
+        </div>
         </div>
       </header>
 
@@ -147,7 +165,83 @@
             </div>
           </div>
         </aside>
+        
+        <transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="opacity-0 scale-95"
+          leave-active-class="transition duration-150 ease-in"
+          leave-to-class="opacity-0 scale-95"
+        >
+          <div v-if="showProfile" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" @click.self="showProfile = false">
+            <div class="bg-ide-panel w-full max-w-lg rounded-lg border border-ide-border shadow-2xl overflow-hidden">
+              
+              <div class="bg-ide-bg px-6 py-4 border-b border-ide-border flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-ide-accent/10 rounded-lg">
+                      <ChartBarIcon class="w-6 h-6 text-ide-accent" />
+                    </div>
+                    <div>
+                      <h3 class="font-mono font-bold text-white text-lg">Player Stats</h3>
+                      <p class="text-xs text-ide-dim font-mono">~/profile/{{ currentUser.username }}.json</p>
+                    </div>
+                </div>
+                <button @click="showProfile = false" class="text-ide-dim hover:text-white">
+                    <span class="font-mono text-xs">[ ESC ]</span>
+                </button>
+              </div>
 
+              <div class="p-6 space-y-6">
+                
+                <div class="text-center">
+                  <div class="inline-block px-3 py-1 rounded-full bg-ide-accent/10 border border-ide-accent/20 text-ide-accent text-xs font-bold font-mono mb-2 uppercase tracking-widest">
+                    {{ currentUser.position || 'Estagiário' }}
+                  </div>
+                  <h2 class="text-3xl font-bold text-white mb-1">{{ currentUser.careerXp || 0 }} XP</h2>
+                  <p class="text-xs text-ide-dim mb-4">Lifetime Experience</p>
+                  
+                  <div class="relative h-4 bg-ide-bg rounded-full overflow-hidden border border-ide-border">
+                    <div 
+                      class="h-full bg-gradient-to-r from-blue-500 to-ide-accent transition-all duration-1000 ease-out"
+                      :style="{ width: levelInfo.percent + '%' }"
+                    ></div>
+                    <div class="absolute inset-0 flex items-center justify-between px-3 text-[9px] font-mono font-bold text-white/50 mix-blend-difference">
+                      <span>CURRENT</span>
+                      <span>NEXT: {{ levelInfo.nextLevel }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="h-px bg-ide-border"></div>
+
+                <div class="grid grid-cols-3 gap-4">
+                  <div class="bg-ide-bg p-3 rounded border border-ide-border text-center">
+                    <div class="text-2xl font-bold text-white">{{ currentUser.stats?.totalGamesPlayed || 0 }}</div>
+                    <div class="text-[10px] text-ide-dim font-mono uppercase mt-1">Games Played</div>
+                  </div>
+                  <div class="bg-ide-bg p-3 rounded border border-ide-border text-center">
+                    <div class="text-2xl font-bold text-yellow-400">{{ currentUser.stats?.totalBingos || 0 }}</div>
+                    <div class="text-[10px] text-ide-dim font-mono uppercase mt-1">Total Bingos</div>
+                  </div>
+                  <div class="bg-ide-bg p-3 rounded border border-ide-border text-center">
+                    <div class="text-2xl font-bold text-green-400">{{ currentUser.stats?.totalSlotsMarked || 0 }}</div>
+                    <div class="text-[10px] text-ide-dim font-mono uppercase mt-1">Slots Marked</div>
+                  </div>
+                </div>
+
+                <div class="bg-ide-bg/50 p-4 rounded border border-ide-border flex justify-between items-center">
+                  <div>
+                    <div class="text-sm font-bold text-white">Season Progress</div>
+                    <div class="text-xs text-ide-dim">Resets monthly</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xl font-mono font-bold text-ide-accent">{{ currentUser.seasonXp || 0 }} XP</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </transition>
       </div>
     </div>
 
@@ -204,7 +298,14 @@
 import SockJS from 'sockjs-client'
 import Stomp from 'webstomp-client'
 import confetti from 'canvas-confetti'
-import { TrophyIcon, ArrowRightOnRectangleIcon, CodeBracketIcon, TagIcon } from '@heroicons/vue/24/outline'
+import { 
+  TrophyIcon,
+  TagIcon,
+  ArrowRightOnRectangleIcon,
+  CodeBracketIcon,
+  UserCircleIcon, 
+  ChartBarIcon
+} from '@heroicons/vue/24/outline'
 import { useSound } from '@/composables/useSound';
 import {version} from '../../package.json'
 
@@ -222,6 +323,9 @@ const isLoading = ref(true)
 const inspectedCard = ref(null)
 const inspectedUser = ref('')
 const loadingInspection = ref(false)
+
+const showProfile = ref(false)
+const isLoadingProfile = ref(false)
 
 const appVersion = version
 
@@ -302,9 +406,23 @@ const toggleSlot = async (slot) => {
   try {
     const response = await api(`/game/mark/${slot.position}`, { method: 'POST' })
     card.value = response
+
+    if (slot.marked) { // Se marcou
+        currentUser.value.careerXp = (currentUser.value.careerXp || 0) + 10
+        currentUser.value.seasonXp = (currentUser.value.seasonXp || 0) + 10
+        if (currentUser.value.stats) currentUser.value.stats.totalSlotsMarked++
+    } else { // Se desmarcou
+        currentUser.value.careerXp = Math.max(0, (currentUser.value.careerXp || 0) - 10)
+        currentUser.value.seasonXp = Math.max(0, (currentUser.value.seasonXp || 0) - 10)
+        if (currentUser.value.stats) currentUser.value.stats.totalSlotsMarked--
+    }
+
     if (response.completed && !card.value.completed) {
       play('win')
+      currentUser.value.careerXp += 150
+      currentUser.value.seasonXp += 150
     }
+    localStorage.setItem('bingo_user', JSON.stringify(currentUser.value))
   } catch (error) {
     slot.marked = originalState
     alert('Erro de sincronização. Tente novamente.')
@@ -314,6 +432,25 @@ const toggleSlot = async (slot) => {
 const closeInspection = () => {
     inspectedCard.value = null
     inspectedUser.value = ''
+}
+
+const openProfile = async () => {
+  showProfile.value = true // Abre o modal imediatamente
+  isLoadingProfile.value = true // Ativa o spinner do modal
+
+  try {
+    const updatedUser = await api('/auth/me')
+    
+    // Atualiza o estado local com os dados frescos do banco
+    currentUser.value = updatedUser
+    
+    // Atualiza o localStorage para manter sincronizado caso dê F5 depois
+    localStorage.setItem('bingo_user', JSON.stringify(updatedUser))
+  } catch (error) {
+    console.error("Erro ao carregar perfil", error)
+  } finally {
+    isLoadingProfile.value = false // Desativa o spinner
+  }
 }
 
 const inspectPlayer = async (player) => {
@@ -335,6 +472,34 @@ const inspectPlayer = async (player) => {
         loadingInspection.value = false
     }
 }
+
+const getLevelProgress = (xp = 0) => {
+  const milestones = [
+    { name: 'Estagiário', limit: 500 },
+    { name: 'Júnior', limit: 2000 },
+    { name: 'Pleno', limit: 5000 },
+    { name: 'Sênior', limit: 10000 },
+    { name: 'Tech Lead', limit: Infinity }
+  ]
+
+  let previousLimit = 0
+  for (const level of milestones) {
+    if (xp < level.limit) {
+      const range = level.limit - previousLimit
+      const current = xp - previousLimit
+      const percent = Math.min(100, Math.max(0, (current / range) * 100))
+      
+      return {
+        nextLevel: level.name === 'Estagiário' ? 'Júnior' : level.name,
+        limit: level.limit,
+        percent: percent
+      }
+    }
+    previousLimit = level.limit
+  }
+  return { nextLevel: 'Max Level', limit: 0, percent: 100 }
+}
+const levelInfo = computed(() => getLevelProgress(currentUser.value.careerXp))
 
 const logout = () => {
   localStorage.removeItem('bingo_token')

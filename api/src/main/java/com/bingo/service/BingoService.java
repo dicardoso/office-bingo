@@ -4,9 +4,11 @@ import com.bingo.dto.SocketDto.*;
 import com.bingo.model.*;
 import com.bingo.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,6 +22,8 @@ public class BingoService {
     private final AuditLogRepository auditLogRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final BingoPhraseRepository phraseRepository;
+    private final UserRepository userRepository;
+    private final GamificationService gamificationService;
 
     public BingoCard getOrCreateDailyCard(User user) {
         LocalDate today = LocalDate.now();
@@ -41,6 +45,7 @@ public class BingoService {
         BingoCard card = getBingoCard(user, date, shuffledPhrases);
 
         logAction(user.getId(), "CREATE_CARD", "Data: " + date);
+        gamificationService.processAction(user, "CREATE_CARD");
         return cardRepository.save(card);
     }
 
@@ -67,6 +72,7 @@ public class BingoService {
         BingoCard card = getOrCreateDailyCard(user);
 
         boolean changed = false;
+        boolean justCompleted = false;
         for (BingoCard.Slot slot : card.getSlots()) {
             if (slot.getPosition() == position) {
                 boolean novoEstado = !slot.isMarked();
@@ -74,9 +80,11 @@ public class BingoService {
 
                 if (novoEstado) {
                     card.setMarkedCount(card.getMarkedCount() + 1);
+                    gamificationService.processAction(user, "MARK_SLOT");
                     logAction(user.getId(), "MARK_SLOT", slot.getPhrase());
                 } else {
                     card.setMarkedCount(Math.max(0, card.getMarkedCount() - 1));
+                    gamificationService.processAction(user, "UNMARK_SLOT");
                     logAction(user.getId(), "UNMARK_SLOT", slot.getPhrase());
                 }
 
@@ -94,6 +102,9 @@ public class BingoService {
 
                 if (canNotify) {
                     card.setLastWinNotification(LocalDateTime.now());
+
+                    gamificationService.processAction(user, "BINGO_WIN");
+                    justCompleted = true;
 
                     logAction(user.getId(), "BINGO_WIN_BROADCAST", "Ganhou e notificou a galera!");
 
@@ -129,12 +140,46 @@ public class BingoService {
         return cardRepository.findAllByGameDateOrderByMarkedCountDesc(LocalDate.now());
     }
 
+    private String getClientIp() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attributes == null) {
+                return "UNKNOWN";
+            }
+
+            HttpServletRequest request = attributes.getRequest();
+
+            String ip = request.getHeader("X-Forwarded-For");
+
+            if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+                ip = request.getHeader("Proxy-Client-IP");
+            }
+            if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+                ip = request.getHeader("WL-Proxy-Client-IP");
+            }
+
+            if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+                ip = request.getRemoteAddr();
+            }
+
+            if (ip != null && ip.contains(",")) {
+                ip = ip.split(",")[0].trim();
+            }
+
+            return ip;
+        } catch (Exception e) {
+            return "ERROR_EXTRACTING_IP";
+        }
+    }
+
     private void logAction(String userId, String action, String details) {
+        String clientIp = getClientIp();
         auditLogRepository.save(AuditLog.builder()
                 .timestamp(LocalDateTime.now())
                 .userId(userId)
                 .action(action)
                 .details(details)
+                .ipAddress(clientIp)
                 .build());
     }
 
