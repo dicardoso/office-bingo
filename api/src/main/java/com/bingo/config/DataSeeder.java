@@ -22,7 +22,7 @@ public class DataSeeder implements CommandLineRunner {
         // 1. Lista Técnica
         List<String> techPhrases = Arrays.asList(
                 "Na minha máquina funciona",
-                "Reinicia o servidor que volta",
+                "Reinicia o servidor",
                 "É problema de cache/cookie",
                 "Caiu a internet (ou o VPN)",
                 "Conflito chato no merge",
@@ -30,9 +30,7 @@ public class DataSeeder implements CommandLineRunner {
                 "Culpa do estagiário",
                 "O GIT morreu",
                 "Comentou código em vez de apagar",
-                "Push direto na master/main",
-                "Erro de DNS",
-                "Foi culpa do Firewall"
+                "Push direto na master/main"
         );
 
         // 2. Lista Comportamental
@@ -51,7 +49,7 @@ public class DataSeeder implements CommandLineRunner {
                 "Roubaram minha cadeira/cabo",          // (João Pedro furtou algo)
                 "Rejeitou a task no Review",            // (Walter rejeitou task)
                 "Olhar de julgamento silencioso",       // (Letícia cara de nojo)
-                "Subestimou a task ('É fácil')",   // (Hugo disse que é liso)
+                "Subestimou a task ('É fácil')",        // (Hugo disse que é liso)
                 "Chegou de óculos escuro (Ressaca?)",   // (Alic entrou de óculos)
                 "Fofoca no cantinho do café",           // (Letícia se meteu na vida)
                 "Levou crédito pelo bug fix alheio"     // (Diogo agradeceu algo que não fez)
@@ -65,7 +63,6 @@ public class DataSeeder implements CommandLineRunner {
 
     private void processPhrases(List<String> phrases, String category) {
         for (String text : phrases) {
-            // Lógica de UPSERT: Busca pelo texto
             BingoPhrase phrase = phraseRepository.findByText(text)
                     .orElseGet(() -> BingoPhrase.builder()
                             .text(text)
