@@ -12,6 +12,11 @@ export default defineNuxtConfig({
       }
     }
   },
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.URL_API || 'http://localhost:8080/api'
+    }
+  },
 
   future: {
     compatibilityVersion: 4,

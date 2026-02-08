@@ -31,6 +31,10 @@ public class GamificationService {
                 addXp(user, XP_BINGO_WIN);
                 stats.setTotalBingos(stats.getTotalBingos() + 1);
             }
+            case "BINGO_REVOKE" -> {
+                removeXp(user, XP_BINGO_WIN);
+                stats.setTotalBingos(Math.max(0, stats.getTotalBingos() - 1));
+            }
             case "CREATE_CARD" -> {
                 stats.setTotalGamesPlayed(stats.getTotalGamesPlayed() + 1);
             }
@@ -45,6 +49,14 @@ public class GamificationService {
     private void addXp(User user, long amount) {
         user.setCareerXp(user.getCareerXp() + amount);
         user.setSeasonXp(user.getSeasonXp() + amount);
+    }
+
+    private void removeXp(User user, long amount) {
+        long newCareer = Math.max(0, user.getCareerXp() - amount);
+        long newSeason = Math.max(0, user.getSeasonXp() - amount);
+
+        user.setCareerXp(newCareer);
+        user.setSeasonXp(newSeason);
     }
 
     private void removeXp(User user) {

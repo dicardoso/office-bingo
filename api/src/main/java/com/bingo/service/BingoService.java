@@ -95,6 +95,7 @@ public class BingoService {
 
         if (changed) {
             boolean isBingoNow = checkWinCondition(card);
+            boolean wasCompletedBefore = card.isCompleted();
 
             if (isBingoNow) {
                 boolean canNotify = card.getLastWinNotification() == null ||
@@ -115,8 +116,14 @@ public class BingoService {
                     );
                     messagingTemplate.convertAndSend("/topic/winners", winner);
                 } else {
+                    gamificationService.processAction(user, "BINGO_WIN");
                     logAction(user.getId(), "BINGO_WIN_SILENT", "Ganhou (em cooldown)");
                 }
+            }
+            else if (wasCompletedBefore && !isBingoNow) {
+                System.out.println("revoke");
+                logAction(user.getId(), "BINGO_REVOKE", "Desfez o Bingo (Pontos removidos)");
+                gamificationService.processAction(user, "BINGO_REVOKE");
             }
 
             card.setCompleted(isBingoNow);
