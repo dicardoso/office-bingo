@@ -312,6 +312,7 @@ import {version} from '../../package.json'
 const { play } = useSound()
 const api = useAPI()
 const router = useRouter()
+const config = useRuntimeConfig()
 
 const currentUser = ref('')
 const card = ref(null)
@@ -330,7 +331,8 @@ const isLoadingProfile = ref(false)
 const appVersion = version
 
 const connectSocket = () => {
-  const socket = new SockJS('http://172.16.155.182:8080/ws')
+  const socket = new SockJS(`${config.public.apiBase}/ws`)
+  console.log(socket)
   const stompClient = Stomp.over(socket)
   
   stompClient.debug = () => {}
