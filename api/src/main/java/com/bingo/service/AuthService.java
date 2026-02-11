@@ -38,7 +38,10 @@ public class AuthService {
         return new AuthResponse(token, new UserDto.UserResponse(
                 savedUser.getId(),
                 savedUser.getUsername(),
-                savedUser.getPosition()
+                savedUser.getPosition(),
+                savedUser.getCareerXp(),
+                savedUser.getSeasonXp(),
+                savedUser.getStats() != null ? user.getStats() : new User.UserStats()
         ));
     }
 
@@ -58,7 +61,10 @@ public class AuthService {
         return new AuthResponse(token, new UserDto.UserResponse(
                 user.getId(),
                 user.getUsername(),
-                user.getPosition()
+                user.getPosition(),
+                user.getCareerXp(),
+                user.getSeasonXp(),
+                user.getStats()
         ));
     }
 }

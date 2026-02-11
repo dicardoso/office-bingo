@@ -16,4 +16,5 @@ public class AuditLog {
     private String userId;
     private String action;
     private String details;
+    private String ipAddress;
 }
