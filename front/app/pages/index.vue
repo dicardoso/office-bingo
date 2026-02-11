@@ -47,7 +47,7 @@
             <button @click="openProfile" class="p-2 hover:bg-ide-panel rounded-full text-ide-dim hover:text-white transition-colors" title="View Profile Stats">
               <UserCircleIcon class="w-5 h-5" />
             </button>
-            <div class="w-px h-4 bg-ide-border mx-1"></div>
+            <div class="w-px h-4 bg-ide-border bg-ide-dim"></div>
             <button @click="logout" class="p-2 hover:bg-ide-panel rounded-full text-red-400 hover:bg-red-400/10 transition-colors" title="Exit Process">
               <ArrowRightOnRectangleIcon class="w-5 h-5" />
             </button>
@@ -298,15 +298,15 @@
 import SockJS from 'sockjs-client'
 import Stomp from 'webstomp-client'
 import confetti from 'canvas-confetti'
-import { 
-  TrophyIcon,
-  TagIcon,
+import {
   ArrowRightOnRectangleIcon,
+  ChartBarIcon,
   CodeBracketIcon,
-  UserCircleIcon, 
-  ChartBarIcon
+  TagIcon,
+  TrophyIcon,
+  UserCircleIcon
 } from '@heroicons/vue/24/outline'
-import { useSound } from '@/composables/useSound';
+import {useSound} from '@/composables/useSound';
 import {version} from '../../package.json'
 
 const { play } = useSound()
@@ -331,7 +331,7 @@ const isLoadingProfile = ref(false)
 const appVersion = version
 
 const connectSocket = () => {
-  const socket = new SockJS(`${config.public.apiBase}/ws`)
+  const socket = new SockJS(`http://172.16.155.182:8080/ws`)
   console.log(socket)
   const stompClient = Stomp.over(socket)
   
@@ -437,21 +437,18 @@ const closeInspection = () => {
 }
 
 const openProfile = async () => {
-  showProfile.value = true // Abre o modal imediatamente
-  isLoadingProfile.value = true // Ativa o spinner do modal
+  showProfile.value = true
+  isLoadingProfile.value = true
 
   try {
     const updatedUser = await api('/auth/me')
     
-    // Atualiza o estado local com os dados frescos do banco
     currentUser.value = updatedUser
-    
-    // Atualiza o localStorage para manter sincronizado caso dê F5 depois
     localStorage.setItem('bingo_user', JSON.stringify(updatedUser))
   } catch (error) {
     console.error("Erro ao carregar perfil", error)
   } finally {
-    isLoadingProfile.value = false // Desativa o spinner
+    isLoadingProfile.value = false
   }
 }
 
@@ -463,8 +460,7 @@ const inspectPlayer = async (player) => {
     loadingInspection.value = true
     
     try {
-        const data = await api(`/game/card/${player.username}`)
-        inspectedCard.value = data
+      inspectedCard.value = await api(`/game/card/${player.username}`)
     } catch (e) {
         console.error("Erro ao inspecionar", e)
         console.log(e)

@@ -1,6 +1,6 @@
   export const useAPI = () => {
     const config = useRuntimeConfig()
-    const baseURL = `${config.public.apiBase}/api`
+    const baseURL = `http://172.16.155.182:8080/api`
 
     return $fetch.create({
       baseURL,
