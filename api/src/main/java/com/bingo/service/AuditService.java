@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +50,10 @@ public class AuditService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Posição inválida na cartela."));
 
+        if (!targetSlot.isMarked()) {
+            throw new IllegalArgumentException("Este item ainda não foi marcado e não pode ser auditado.");
+        }
+
         if (targetSlot.isVerified()) {
             throw new IllegalArgumentException("Este item já foi verificado e é verdade absoluta!");
         }
@@ -62,7 +67,7 @@ public class AuditService {
                 .slotPhrase(targetSlot.getPhrase())
                 .startTime(LocalDateTime.now())
                 .status(AuditStatus.OPEN)
-                // .votes() // Não precisa passar, o @Builder.Default cria o HashMap vazio
+                // .votes()
                 .build();
 
         session = auditRepository.save(session);
@@ -105,7 +110,11 @@ public class AuditService {
     }
 
     public void closeAudit(String auditId) {
-        AuditSession session = auditRepository.findById(auditId).orElseThrow();
+        Optional<AuditSession> optionalSession = auditRepository.findById(auditId);
+        if (optionalSession.isEmpty()) {
+            return;
+        }
+        AuditSession session = optionalSession.get();
 
         if (session.getStatus() != AuditStatus.OPEN) return;
 
