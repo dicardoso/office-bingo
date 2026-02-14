@@ -70,7 +70,6 @@ public class GamificationService {
 
         long newCareer = Math.max(0, currentCareer + amount);
         long newSeason = Math.max(0, currentSeason + amount);
-        System.out.println(newSeason);
         user.setCareerXp(newCareer);
         user.setSeasonXp(newSeason);
     }

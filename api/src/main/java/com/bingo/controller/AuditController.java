@@ -23,7 +23,6 @@ public class AuditController {
 
     @PostMapping("/initiate")
     public ResponseEntity<AuditSession> initiateAudit(@RequestBody AuditRequest request) {
-        System.out.println("Iniciando Auditor");
         User auditor = authService.getCurrentUser();
         return ResponseEntity.ok(auditService.startAudit(request, auditor));
     }

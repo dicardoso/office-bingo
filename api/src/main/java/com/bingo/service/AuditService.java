@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -113,8 +111,6 @@ public class AuditService {
 
         long votesTrue = session.getVotes().values().stream().filter(v -> v).count();
         long votesFalse = session.getVotes().values().stream().filter(v -> !v).count();
-        System.out.println(votesFalse + " votado com sucesso");
-        System.out.println(votesTrue + " votado com sucesso");
         boolean isGuilty = votesFalse > votesTrue;
 
         if (isGuilty) {
