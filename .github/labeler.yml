@@ -1,0 +1,25 @@
+documentation:
+  - 'docs/**/*'
+  - 'readme.md'
+  - 'readme.adoc'
+
+frontend:
+  - 'packages/app/src/**/*'
+  - 'front/**/*'
+
+backend:
+  - 'services/api/**/*'
+  - 'src/backend/**/*'
+  - 'back/**/*'
+
+tests:
+  - '**/__tests__/*'
+  - '**/*.test.js'
+  - '**/*.spec.js'
+
+chore:
+  - '.github/**/*'
+  - '*.md'
+
+"merge conflict":
+  - any: ['**/*']
