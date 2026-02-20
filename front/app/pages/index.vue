@@ -614,13 +614,47 @@ const logout = () => {
 
 const handleAuditStart = (session) => {
     activeAudit.value = session
-    play('notification') 
-    auditTimeLeft.value = 60
+    play('notification')
+
+    // LÓGICA DE TEMPO RESTANTE REAL
+    // O backend envia startTime. Assumimos duração de 60s.
+    const startTime = new Date(session.startTime).getTime()
+    const now = new Date().getTime()
+    const elapsedSeconds = Math.floor((now - startTime) / 1000)
+    const remainingTime = 60 - elapsedSeconds
+
+    if (remainingTime <= 0) {
+        // Se já acabou o tempo mas o socket ainda não mandou o 'end',
+        // fechamos visualmente ou mostramos 0
+        activeAudit.value = null
+        return
+    }
+
+    auditTimeLeft.value = remainingTime
+
     if (auditTimerInterval) clearInterval(auditTimerInterval)
     auditTimerInterval = setInterval(() => {
         auditTimeLeft.value--
-        if (auditTimeLeft.value <= 0) clearInterval(auditTimerInterval)
+        if (auditTimeLeft.value <= 0) {
+            clearInterval(auditTimerInterval)
+            // Opcional: Aqui você pode fazer um "fetch" manual do resultado 
+            // caso o socket tenha falhado em enviar o 'end'
+        }
     }, 1000)
+}
+const checkActiveAudit = async () => {
+    try {
+        // Chama o endpoint novo (GET /game/audit/current)
+        // Nota: O método fetch/axios pode lançar erro em 204 ou retornar null/undefined
+        const session = await api('/game/audit/current')
+        
+        if (session && session.status === 'OPEN') {
+            handleAuditStart(session)
+        }
+    } catch (e) {
+        // Se der 404 ou 204, apenas ignoramos, significa que não tem auditoria
+        console.log("Nenhuma auditoria ativa no momento.")
+    }
 }
 
 const handleAuditEnd = (session) => {
@@ -671,5 +705,6 @@ onMounted(() => {
   currentUser.value = JSON.parse(localStorage.getItem('bingo_user')) || 'Dev'
   connectSocket()
   loadData()
+  checkActiveAudit()
 })
 </script>

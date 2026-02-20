@@ -146,4 +146,8 @@ public class AuditService {
         gamification.removeXp(session.getAuditorId(), XP_PENALTY_SLANDER);
         cardService.markAsVerified(session.getAccusedId(), session.getSlotPosition());
     }
+
+    public Optional<AuditSession> getCurrentOpenAudit() {
+        return auditRepository.findFirstByStatusOrderByStartTimeDesc(AuditStatus.OPEN);
+    }
 }

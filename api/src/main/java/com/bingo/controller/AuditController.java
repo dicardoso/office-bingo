@@ -8,10 +8,7 @@ import com.bingo.service.AuditService;
 import com.bingo.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/game/audit")
@@ -32,5 +29,12 @@ public class AuditController {
         User voter = authService.getCurrentUser();
         auditService.processVote(request, voter);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/current")
+    public ResponseEntity<AuditSession> getCurrentAudit() {
+        return auditService.getCurrentOpenAudit()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 }
