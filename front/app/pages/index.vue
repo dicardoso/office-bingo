@@ -395,9 +395,8 @@ import {
   TagIcon,
   TrophyIcon,
   UserCircleIcon,
-  ScaleIcon,       // <--- NOVO
-  ShieldCheckIcon,  // <--- NOVO
-  ExclamationTriangleIcon // <--- NOVO
+  ScaleIcon,
+  ShieldCheckIcon
 } from '@heroicons/vue/24/outline'
 import {useSound} from '@/composables/useSound';
 import {version} from '../../package.json'
@@ -628,8 +627,7 @@ const handleAuditEnd = (session) => {
   activeAudit.value = session
   clearInterval(auditTimerInterval)
   setTimeout(() => { activeAudit.value = null }, 5000)
-    
-  // Se fui inocentado, recarrego para ver o selo dourado
+
   if (session.accusedId === currentUser.value.id) loadData()
 }
 
@@ -640,7 +638,7 @@ const initiateAudit = async (slot) => {
     await api('/game/audit/initiate', {
       method: 'POST',
       body: {
-        accusedId: inspectedUserId.value, // <--- Usa o ID capturado
+        accusedId: inspectedUserId.value,
         slotPosition: slot.position
       }
     })
@@ -671,7 +669,7 @@ const voteCounts = computed(() => {
 
 onMounted(() => {
   currentUser.value = JSON.parse(localStorage.getItem('bingo_user')) || 'Dev'
-  loadData()
   connectSocket()
+  loadData()
 })
 </script>
