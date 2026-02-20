@@ -68,11 +68,42 @@ public class BingoService {
         return card;
     }
 
+    public void markAsVerified(String userId, int position) {
+        LocalDate today = LocalDate.now();
+        Optional<BingoCard> cardOpt = cardRepository.findByUserIdAndGameDate(userId, today);
+
+        if (cardOpt.isEmpty()) return;
+
+        BingoCard card = cardOpt.get();
+        boolean changed = false;
+
+        for (BingoCard.Slot slot : card.getSlots()) {
+            if (slot.getPosition() == position && slot.isMarked()) {
+                slot.setVerified(true); // <--- APLICA O SELO
+                changed = true;
+                break;
+            }
+        }
+
+        if (changed) {
+            BingoCard saved = cardRepository.save(card);
+
+            // Avisa o front para pintar de dourado/verde
+            ProgressUpdate update = new ProgressUpdate(
+                    saved.getUserId(),
+                    saved.getUsername(),
+                    saved.getMarkedCount(),
+                    saved.isCompleted()
+            );
+            messagingTemplate.convertAndSend("/topic/progress", update);
+        }
+    }
+
     public BingoCard markSlot(User user, int position) {
         BingoCard card = getOrCreateDailyCard(user);
 
         boolean changed = false;
-        boolean justCompleted = false;
+
         for (BingoCard.Slot slot : card.getSlots()) {
             if (slot.getPosition() == position) {
                 boolean novoEstado = !slot.isMarked();
@@ -84,6 +115,7 @@ public class BingoService {
                     logAction(user.getId(), "MARK_SLOT", slot.getPhrase());
                 } else {
                     card.setMarkedCount(Math.max(0, card.getMarkedCount() - 1));
+                    slot.setVerified(false);
                     gamificationService.processAction(user, "UNMARK_SLOT");
                     logAction(user.getId(), "UNMARK_SLOT", slot.getPhrase());
                 }
@@ -98,16 +130,16 @@ public class BingoService {
             boolean wasCompletedBefore = card.isCompleted();
 
             if (isBingoNow) {
+                if (!wasCompletedBefore) {
+                    gamificationService.processAction(user, "BINGO_WIN");
+                }
                 boolean canNotify = card.getLastWinNotification() == null ||
                         card.getLastWinNotification().isBefore(LocalDateTime.now().minusMinutes(1));
 
                 if (canNotify) {
                     card.setLastWinNotification(LocalDateTime.now());
 
-                    gamificationService.processAction(user, "BINGO_WIN");
-                    justCompleted = true;
-
-                    logAction(user.getId(), "BINGO_WIN_BROADCAST", "Ganhou e notificou a galera!");
+                    logAction(user.getId(), "BINGO_WIN_BROADCAST", "Ganhou e notificou!");
 
                     WinnerNotification winner = new WinnerNotification(
                             user.getUsername(),
@@ -115,19 +147,14 @@ public class BingoService {
                             LocalDateTime.now().toString()
                     );
                     messagingTemplate.convertAndSend("/topic/winners", winner);
-                } else {
-                    gamificationService.processAction(user, "BINGO_WIN");
-                    logAction(user.getId(), "BINGO_WIN_SILENT", "Ganhou (em cooldown)");
                 }
             }
             else if (wasCompletedBefore && !isBingoNow) {
-                System.out.println("revoke");
                 logAction(user.getId(), "BINGO_REVOKE", "Desfez o Bingo (Pontos removidos)");
                 gamificationService.processAction(user, "BINGO_REVOKE");
             }
 
             card.setCompleted(isBingoNow);
-
             BingoCard saved = cardRepository.save(card);
 
             ProgressUpdate update = new ProgressUpdate(
@@ -205,5 +232,44 @@ public class BingoService {
         if (m[0] && m[4] && m[8]) return true;
         if (m[2] && m[4] && m[6]) return true;
         return false;
+    }
+
+    public void forceUnmark(String userId, int position) {
+        LocalDate today = LocalDate.now();
+        Optional<BingoCard> cardOpt = cardRepository.findByUserIdAndGameDate(userId, today);
+
+        if (cardOpt.isEmpty()) {
+            return; // Usuário nem tem cartela hoje, nada a fazer.
+        }
+
+        BingoCard card = cardOpt.get();
+        boolean changed = false;
+
+        for (BingoCard.Slot slot : card.getSlots()) {
+            if (slot.getPosition() == position && slot.isMarked()) {
+                slot.setMarked(false);
+                card.setMarkedCount(Math.max(0, card.getMarkedCount() - 1));
+
+                logAction(userId, "AUDIT_FORCED_UNMARK", "Marcação anulada pelo tribunal: " + slot.getPhrase());
+
+                changed = true;
+                break;
+            }
+        }
+
+        if (changed) {
+            boolean isBingo = checkWinCondition(card);
+            card.setCompleted(isBingo);
+
+            BingoCard saved = cardRepository.save(card);
+
+            ProgressUpdate update = new ProgressUpdate(
+                    saved.getUserId(),
+                    saved.getUsername(),
+                    saved.getMarkedCount(),
+                    saved.isCompleted()
+            );
+            messagingTemplate.convertAndSend("/topic/progress", update);
+        }
     }
 }

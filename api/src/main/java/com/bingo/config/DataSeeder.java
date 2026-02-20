@@ -55,8 +55,8 @@ public class DataSeeder implements CommandLineRunner {
                 "Levou crédito pelo bug fix alheio"     // (Diogo agradeceu algo que não fez)
         );
 
-        processPhrases(techPhrases, "TECNICO");
-        processPhrases(behaviorPhrases, "COMPORTAMENTO");
+//        processPhrases(techPhrases, "TECNICO");
+//        processPhrases(behaviorPhrases, "COMPORTAMENTO");
 
         System.out.println("--- Sincronização de frases concluída ---");
     }

@@ -272,17 +272,31 @@
                 </svg>
             </div>
             <div v-else class="grid grid-cols-3 gap-3">
-                <div 
-                    v-for="slot in inspectedCard.slots" 
-                    :key="slot.position"
-                    class="aspect-square rounded border flex items-center justify-center p-2 text-center text-xs select-none"
-                    :class="slot.marked 
-                        ? 'bg-ide-success/5 border-ide-success/50 text-ide-success line-through opacity-80' 
-                        : 'bg-ide-bg border-ide-border text-ide-dim opacity-50'"
-                >
-                    {{ slot.phrase }}
-                </div>
-            </div>
+    <div 
+        v-for="slot in inspectedCard.slots" 
+        :key="slot.position"
+        class="aspect-square rounded border flex flex-col items-center justify-center p-2 text-center text-xs select-none relative group transition-all"
+        :class="[
+            slot.verified 
+                ? 'bg-yellow-500/10 border-yellow-500 text-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.2)]' 
+                : slot.marked 
+                    ? 'bg-ide-success/5 border-ide-success/50 text-ide-success line-through opacity-80 cursor-pointer hover:bg-red-900/20 hover:border-red-500 hover:text-red-400' 
+                    : 'bg-ide-bg border-ide-border text-ide-dim opacity-50'
+        ]"
+        @click="slot.marked && !slot.verified ? initiateAudit(slot) : null"
+    >
+        {{ slot.phrase }}
+
+        <div v-if="slot.verified" class="absolute -top-2 -right-2 bg-ide-bg rounded-full p-0.5 border border-yellow-500 shadow-sm z-10">
+            <ShieldCheckIcon class="w-4 h-4 text-yellow-500" />
+        </div>
+        
+        <div v-if="slot.marked && !slot.verified" class="absolute inset-0 flex flex-col items-center justify-center bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity rounded backdrop-blur-[2px]">
+            <ScaleIcon class="w-6 h-6 text-red-500 mb-1" />
+            <span class="text-[10px] font-bold text-red-400 uppercase tracking-widest">Contestar</span>
+        </div>
+    </div>
+</div>
           </div>
           
           <div class="bg-ide-bg px-4 py-2 border-t border-ide-border text-center">
@@ -290,8 +304,84 @@
           </div>
         </div>
       </div>
+      
     </transition>
 
+    <transition
+      enter-active-class="transition duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)"
+      enter-from-class="translate-y-full opacity-0 scale-90"
+      leave-active-class="transition duration-300 ease-in"
+      leave-to-class="translate-y-full opacity-0 scale-90"
+    >
+      <div v-if="activeAudit" class="fixed bottom-4 right-4 left-4 md:left-auto md:w-96 z-[100]">
+        <div class="bg-ide-panel border-2 rounded-lg shadow-2xl overflow-hidden flex flex-col"
+             :class="activeAudit.status === 'OPEN' ? 'border-red-500 shadow-red-900/50' : (activeAudit.status === 'GUILTY' ? 'border-ide-error' : 'border-ide-success')">
+          
+          <div class="px-4 py-3 flex justify-between items-center text-white font-bold font-mono text-sm uppercase tracking-wider relative overflow-hidden"
+               :class="activeAudit.status === 'OPEN' ? 'bg-red-600' : 'bg-ide-panel border-b border-ide-border'">
+            
+            <div v-if="activeAudit.status === 'OPEN'" class="absolute inset-0 bg-white/10 animate-pulse"></div>
+
+            <div class="flex items-center gap-2 relative z-10">
+                <ScaleIcon class="w-5 h-5" />
+                <span v-if="activeAudit.status === 'OPEN'">EM JULGAMENTO</span>
+                <span v-else>VEREDITO: {{ activeAudit.status === 'GUILTY' ? 'CULPADO' : 'INOCENTE' }}</span>
+            </div>
+            <div class="text-xs font-mono relative z-10 bg-black/20 px-2 py-0.5 rounded">{{ auditTimeLeft }}s</div>
+          </div>
+
+          <div class="p-5 bg-ide-bg/95 backdrop-blur-md">
+            <div class="text-center mb-6">
+                <p class="text-xs text-ide-dim font-mono mb-2">
+                    <span class="text-red-400 font-bold">@{{ activeAudit.auditorName }}</span> questiona a verdade:
+                </p>
+                <div class="text-lg font-bold text-white border border-ide-dim/30 rounded-lg p-3 bg-ide-panel shadow-inner">
+                    "{{ activeAudit.slotPhrase || 'Carregando prova...' }}" 
+                </div>
+                <p class="text-xs text-ide-dim font-mono mt-2">
+                    Réu: <span class="text-yellow-400 font-bold">@{{ activeAudit.accusedName }}</span>
+                </p>
+            </div>
+
+            <div v-if="activeAudit.status === 'OPEN'" class="grid grid-cols-2 gap-4 mb-2">
+                <button 
+                    @click="castVote(true)"
+                    :disabled="currentUser.id === activeAudit.auditorId || currentUser.id === activeAudit.accusedId"
+                    class="group relative flex flex-col items-center justify-center p-3 rounded border border-green-500/30 bg-green-500/5 hover:bg-green-500/20 hover:border-green-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                    <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">👍</span>
+                    <span class="text-[10px] font-bold text-green-400 uppercase tracking-widest">É Verdade</span>
+                </button>
+
+                <button 
+                    @click="castVote(false)"
+                    :disabled="currentUser.id === activeAudit.auditorId || currentUser.id === activeAudit.accusedId"
+                    class="group relative flex flex-col items-center justify-center p-3 rounded border border-red-500/30 bg-red-500/5 hover:bg-red-500/20 hover:border-red-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                    <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">🤥</span>
+                    <span class="text-[10px] font-bold text-red-400 uppercase tracking-widest">É Mentira</span>
+                </button>
+            </div>
+
+            <div class="mt-4 space-y-2">
+                <div class="flex justify-between text-[10px] font-mono text-ide-dim uppercase font-bold">
+                    <span class="text-green-500">Verdade ({{ voteCounts.yes }})</span>
+                    <span class="text-red-500">Mentira ({{ voteCounts.no }})</span>
+                </div>
+                <div class="h-3 bg-ide-panel rounded-full overflow-hidden flex border border-ide-border relative">
+                    <div class="absolute left-1/2 top-0 bottom-0 w-px bg-white/20 z-10"></div>
+                    
+                    <div class="bg-green-500 transition-all duration-500 ease-out" :style="{ width: (voteCounts.total ? (voteCounts.yes / voteCounts.total * 100) : 50) + '%' }"></div>
+                    <div class="bg-red-500 transition-all duration-500 ease-out flex-1"></div>
+                </div>
+                <div class="text-[10px] text-center text-ide-dim font-mono">
+                    {{ voteCounts.total }} votos computados
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 <script setup>
@@ -304,7 +394,9 @@ import {
   CodeBracketIcon,
   TagIcon,
   TrophyIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  ScaleIcon,
+  ShieldCheckIcon
 } from '@heroicons/vue/24/outline'
 import {useSound} from '@/composables/useSound';
 import {version} from '../../package.json'
@@ -324,6 +416,11 @@ const isLoading = ref(true)
 const inspectedCard = ref(null)
 const inspectedUser = ref('')
 const loadingInspection = ref(false)
+
+const activeAudit = ref(null)
+const auditTimeLeft = ref(60)
+const inspectedUserId = ref(null)
+let auditTimerInterval = null
 
 const showProfile = ref(false)
 const isLoadingProfile = ref(false)
@@ -352,6 +449,13 @@ const connectSocket = () => {
       const winner = JSON.parse(tick.body)
       handleWinner(winner)
     })
+    stompClient.subscribe('/topic/audit/start', (msg) => handleAuditStart(JSON.parse(msg.body)))
+    stompClient.subscribe('/topic/audit/update', (msg) => {
+        if (activeAudit.value && activeAudit.value.id === JSON.parse(msg.body).id) {
+            activeAudit.value = JSON.parse(msg.body)
+        }
+    })
+    stompClient.subscribe('/topic/audit/end', (msg) => handleAuditEnd(JSON.parse(msg.body)))
   }, (err) => {
     console.error('Socket connection error:', err)
     socketConnected.value = false
@@ -456,11 +560,15 @@ const inspectPlayer = async (player) => {
     if (player.username === currentUser.value.username) return;
 
     inspectedUser.value = player.username
+    inspectedUserId.value = player.id
     inspectedCard.value = { slots: [] }
     loadingInspection.value = true
     
     try {
-      inspectedCard.value = await api(`/game/card/${player.username}`)
+      const cardData = await api(`/game/card/${player.username}`)
+      inspectedCard.value = cardData
+      // Fallback de segurança se o leaderboard não tiver ID
+      if (cardData.userId) inspectedUserId.value = cardData.userId
     } catch (e) {
         console.error("Erro ao inspecionar", e)
         console.log(e)
@@ -504,9 +612,64 @@ const logout = () => {
   router.push('/login')
 }
 
+const handleAuditStart = (session) => {
+    activeAudit.value = session
+    play('notification') 
+    auditTimeLeft.value = 60
+    if (auditTimerInterval) clearInterval(auditTimerInterval)
+    auditTimerInterval = setInterval(() => {
+        auditTimeLeft.value--
+        if (auditTimeLeft.value <= 0) clearInterval(auditTimerInterval)
+    }, 1000)
+}
+
+const handleAuditEnd = (session) => {
+  activeAudit.value = session
+  clearInterval(auditTimerInterval)
+  setTimeout(() => { activeAudit.value = null }, 5000)
+
+  if (session.accusedId === currentUser.value.id) loadData()
+}
+
+const initiateAudit = async (slot) => {
+  if (!confirm(`TRIBUNAL DO BINGO:\n\nVocê afirma que "${slot.phrase}" é MENTIRA?\n\nSe a maioria votar que aconteceu, você perde 100 XP!`)) return;
+
+  try {
+    await api('/game/audit/initiate', {
+      method: 'POST',
+      body: {
+        accusedId: inspectedUserId.value,
+        slotPosition: slot.position
+      }
+    })
+    closeInspection()
+  } catch (err) {
+    alert(err.message || "Erro ao iniciar auditoria")
+  }
+}
+
+const castVote = async (vote) => {
+  try {
+    await api('/game/audit/vote', {
+      method: 'POST',
+      body: { auditId: activeAudit.value.id, vote: vote }
+    })
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const voteCounts = computed(() => {
+  if (!activeAudit.value) return { yes: 0, no: 0, total: 0 }
+  const votes = Object.values(activeAudit.value.votes || {})
+  const yes = votes.filter(v => v === true).length
+  const no = votes.filter(v => v === false).length
+  return { yes, no, total: votes.length }
+})
+
 onMounted(() => {
   currentUser.value = JSON.parse(localStorage.getItem('bingo_user')) || 'Dev'
-  loadData()
   connectSocket()
+  loadData()
 })
 </script>

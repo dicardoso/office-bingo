@@ -25,5 +25,6 @@ public class BingoCard {
         private int position;
         private String phrase;
         private boolean marked;
+        private boolean verified = false;
     }
 }

@@ -20,19 +20,19 @@ public class GamificationService {
 
         switch (actionType) {
             case "MARK_SLOT" -> {
-                addXp(user, XP_MARK_SLOT);
+                applyXpChange(user, XP_MARK_SLOT);
                 stats.setTotalSlotsMarked(stats.getTotalSlotsMarked() + 1);
             }
             case "UNMARK_SLOT" -> {
-                removeXp(user);
+                applyXpChange(user, -XP_MARK_SLOT);
                 stats.setTotalSlotsMarked(Math.max(0, stats.getTotalSlotsMarked() - 1));
             }
             case "BINGO_WIN" -> {
-                addXp(user, XP_BINGO_WIN);
+                applyXpChange(user, XP_BINGO_WIN);
                 stats.setTotalBingos(stats.getTotalBingos() + 1);
             }
             case "BINGO_REVOKE" -> {
-                removeXp(user, XP_BINGO_WIN);
+                applyXpChange(user, -XP_BINGO_WIN);
                 stats.setTotalBingos(Math.max(0, stats.getTotalBingos() - 1));
             }
             case "CREATE_CARD" -> {
@@ -46,23 +46,30 @@ public class GamificationService {
         userRepository.save(user);
     }
 
-    private void addXp(User user, long amount) {
-        user.setCareerXp(user.getCareerXp() + amount);
-        user.setSeasonXp(user.getSeasonXp() + amount);
+    public void addXp(String userId, long amount) {
+        updateUserXpById(userId, amount);
     }
 
-    private void removeXp(User user, long amount) {
-        long newCareer = Math.max(0, user.getCareerXp() - amount);
-        long newSeason = Math.max(0, user.getSeasonXp() - amount);
-
-        user.setCareerXp(newCareer);
-        user.setSeasonXp(newSeason);
+    public void removeXp(String userId, long amount) {
+        updateUserXpById(userId, -amount);
     }
 
-    private void removeXp(User user) {
-        long newCareer = Math.max(0, user.getCareerXp() - GamificationService.XP_MARK_SLOT);
-        long newSeason = Math.max(0, user.getSeasonXp() - GamificationService.XP_MARK_SLOT);
+    private void updateUserXpById(String userId, long amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found for XP update"));
 
+        applyXpChange(user, amount);
+        updatePosition(user);
+
+        userRepository.save(user);
+    }
+
+    private void applyXpChange(User user, long amount) {
+        long currentCareer = user.getCareerXp() != null ? user.getCareerXp() : 0;
+        long currentSeason = user.getSeasonXp() != null ? user.getSeasonXp() : 0;
+
+        long newCareer = Math.max(0, currentCareer + amount);
+        long newSeason = Math.max(0, currentSeason + amount);
         user.setCareerXp(newCareer);
         user.setSeasonXp(newSeason);
     }
