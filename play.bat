@@ -26,7 +26,7 @@ cd ..
 
 :: --- 3. INICIAR FRONTEND COM IP DINAMICO ---
 cd front
-echo Acesse em: http://%MY_IP%:3000
+echo Acesse em: http://%MY_IP%:3210
 :: Passamos o IP para o Vite através de uma variável de ambiente temporária
 set VITE_API_URL=http://%MY_IP%:8080
-yarn preview --host --port 3000
+yarn preview --host --port 3210

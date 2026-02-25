@@ -30,7 +30,9 @@ public class DataSeeder implements CommandLineRunner {
                 "Culpa do estagiário",
                 "O GIT morreu",
                 "Comentou código em vez de apagar",
-                "Push direto na master/main"
+                "Push direto na master/main",
+                "Subiu código com comentário de IA",
+                "Alguém resmungou "
         );
 
         // 2. Lista Comportamental
@@ -46,8 +48,8 @@ public class DataSeeder implements CommandLineRunner {
                 "Momento Coach / LinkedIn",             // (Alan falou algo inspirador)
                 "Patada gratuita em alguém",            // (Diogo deu uma patada)
                 "Explicação técnica infinita",          // (Manuel foi prolixo)
-                "Roubaram minha cadeira/cabo",          // (João Pedro furtou algo)
-                "Rejeitou a task no Review",            // (Walter rejeitou task)
+                "itens foram 'emprestados' sem aviso",  // (João Pedro furtou algo)
+                "Rejeitou a task/bug",            // (Walter rejeitou task)
                 "Olhar de julgamento silencioso",       // (Letícia cara de nojo)
                 "Subestimou a task ('É fácil')",        // (Hugo disse que é liso)
                 "Chegou de óculos escuro (Ressaca?)",   // (Alic entrou de óculos)

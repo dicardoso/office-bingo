@@ -440,7 +440,7 @@ const connectSocket = () => {
     stompClient.subscribe('/topic/progress', (tick) => {
       const update = JSON.parse(tick.body)
       if (update.username !== currentUser.value.username) {
-        play('notification');
+        // play('notification');
       }
       updateLeaderboardLocal(update)
     })
@@ -614,7 +614,7 @@ const logout = () => {
 
 const handleAuditStart = (session) => {
     activeAudit.value = session
-    play('notification')
+    // play('notification')
 
     // LÓGICA DE TEMPO RESTANTE REAL
     // O backend envia startTime. Assumimos duração de 60s.
