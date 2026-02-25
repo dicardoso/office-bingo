@@ -3,7 +3,7 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
-
+  css: ['~/assets/css/tailwind.css'],
   app: {
     head: {
       title: 'Office Bingo',
