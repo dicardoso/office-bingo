@@ -46,8 +46,8 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [4/4] Servidores Iniciados!
-echo ACESSE: http://localhost:3000 
+echo ACESSE: http://localhost:3210 
 echo.
 
 :: Agora sim, visualiza o build recém-criado
-call yarn preview --host --port 3000
+call yarn preview --host --port 3210
