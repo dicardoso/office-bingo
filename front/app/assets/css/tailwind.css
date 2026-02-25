@@ -4,7 +4,7 @@
 
 @layer base {
   /* 1. TEMA PADRÃO (O que você já usava / Dark Slate) */
-  :root, [data-theme="default"] {
+  :root, [data-theme="dracula"] {
     --color-ide-bg: 15 23 42;      /* #0f172a */
     --color-ide-panel: 30 41 59;   /* #1e293b */
     --color-ide-border: 51 65 85;  /* slate-700 */

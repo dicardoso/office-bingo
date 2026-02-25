@@ -792,7 +792,7 @@ onMounted(async () => {
   try {
     const freshUser = await syncCurrentUser()
     
-    const realTheme = freshUser.preferredTheme || 'default'
+    const realTheme = freshUser.preferredTheme || 'dracula'
     if (realTheme !== currentTheme.value) {
         currentTheme.value = realTheme
     }
