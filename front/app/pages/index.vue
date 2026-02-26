@@ -44,6 +44,14 @@
           </div>
 
           <div class="flex items-center gap-1 bg-ide-bg rounded-full border border-ide-border p-1">
+            <button 
+                v-if="currentUser?.role === 'ADMIN'" 
+                @click="$router.push('/admin')" 
+                class="p-2 hover:bg-ide-panel rounded-full text-ide-accent hover:text-white transition-colors" 
+                title="Abrir Terminal Admin"
+              >
+                <CommandLineIcon class="w-5 h-5" />
+              </button>
             <button @click="openProfile" class="p-2 hover:bg-ide-panel rounded-full text-ide-dim hover:text-white transition-colors" title="View Profile Stats">
               <UserCircleIcon class="w-5 h-5" />
             </button>
@@ -396,7 +404,8 @@ import {
   TrophyIcon,
   UserCircleIcon,
   ScaleIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  CommandLineIcon
 } from '@heroicons/vue/24/outline'
 import {useSound} from '@/composables/useSound';
 import {version} from '../../package.json'
@@ -567,7 +576,6 @@ const inspectPlayer = async (player) => {
     try {
       const cardData = await api(`/game/card/${player.username}`)
       inspectedCard.value = cardData
-      // Fallback de segurança se o leaderboard não tiver ID
       if (cardData.userId) inspectedUserId.value = cardData.userId
     } catch (e) {
         console.error("Erro ao inspecionar", e)
@@ -616,16 +624,12 @@ const handleAuditStart = (session) => {
     activeAudit.value = session
     // play('notification')
 
-    // LÓGICA DE TEMPO RESTANTE REAL
-    // O backend envia startTime. Assumimos duração de 60s.
     const startTime = new Date(session.startTime).getTime()
     const now = new Date().getTime()
     const elapsedSeconds = Math.floor((now - startTime) / 1000)
     const remainingTime = 60 - elapsedSeconds
 
     if (remainingTime <= 0) {
-        // Se já acabou o tempo mas o socket ainda não mandou o 'end',
-        // fechamos visualmente ou mostramos 0
         activeAudit.value = null
         return
     }
@@ -637,22 +641,17 @@ const handleAuditStart = (session) => {
         auditTimeLeft.value--
         if (auditTimeLeft.value <= 0) {
             clearInterval(auditTimerInterval)
-            // Opcional: Aqui você pode fazer um "fetch" manual do resultado 
-            // caso o socket tenha falhado em enviar o 'end'
         }
     }, 1000)
 }
 const checkActiveAudit = async () => {
     try {
-        // Chama o endpoint novo (GET /game/audit/current)
-        // Nota: O método fetch/axios pode lançar erro em 204 ou retornar null/undefined
         const session = await api('/game/audit/current')
         
         if (session && session.status === 'OPEN') {
             handleAuditStart(session)
         }
     } catch (e) {
-        // Se der 404 ou 204, apenas ignoramos, significa que não tem auditoria
         console.log("Nenhuma auditoria ativa no momento.")
     }
 }

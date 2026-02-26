@@ -1,5 +1,6 @@
 package com.bingo.security;
 
+import com.bingo.model.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,13 +22,23 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String username) {
+    public String generateToken(User user) {
         return Jwts.builder()
-                .subject(username)
+                .claim("role", user.getRole())
+                .subject(user.getUsername())
                 .issuedAt(new Date())
                 .expiration(getEndOfDay())
                 .signWith(getSignKey())
                 .compact();
+    }
+
+    public String extractRole(String token) {
+        return Jwts.parser()
+                .verifyWith(getSignKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
     }
 
     private Date getEndOfDay() {

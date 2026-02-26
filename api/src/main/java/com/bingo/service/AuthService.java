@@ -35,7 +35,7 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        String token = jwtService.generateToken(savedUser.getUsername());
+        String token = jwtService.generateToken(savedUser);
 
         return new AuthResponse(token, new UserDto.UserResponse(
                 savedUser.getId(),
@@ -43,7 +43,8 @@ public class AuthService {
                 savedUser.getPosition(),
                 savedUser.getCareerXp(),
                 savedUser.getSeasonXp(),
-                savedUser.getStats() != null ? user.getStats() : new User.UserStats()
+                savedUser.getStats() != null ? user.getStats() : new User.UserStats(),
+                savedUser.getRole()
         ));
     }
 
@@ -58,7 +59,7 @@ public class AuthService {
         user.setLastLoginDate(LocalDateTime.now());
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user.getUsername());
+        String token = jwtService.generateToken(user);
 
         return new AuthResponse(token, new UserDto.UserResponse(
                 user.getId(),
@@ -66,7 +67,8 @@ public class AuthService {
                 user.getPosition(),
                 user.getCareerXp(),
                 user.getSeasonXp(),
-                user.getStats()
+                user.getStats(),
+                user.getRole()
         ));
     }
 
