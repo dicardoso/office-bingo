@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* 1. TEMA PADRÃO (O que você já usava / Dark Slate) */
+  :root, [data-theme="dracula"] {
+    --color-ide-bg: 15 23 42;      /* #0f172a */
+    --color-ide-panel: 30 41 59;   /* #1e293b */
+    --color-ide-border: 51 65 85;  /* slate-700 */
+    --color-ide-accent: 56 189 248; /* #38bdf8 */
+    --color-ide-success: 34 197 94; /* #22c55e */
+    --color-ide-error: 239 68 68;  /* red-500 */
+    --color-ide-text: 226 232 240;  /* #e2e8f0 */
+    --color-ide-dim: 100 116 139;   /* #64748b */
+  }
+
+  /* 2. TEMA MATRIX (Terminal) */
+  [data-theme="matrix"] {
+    --color-ide-bg: 0 0 0; 
+    --color-ide-panel: 0 20 0; 
+    --color-ide-border: 0 50 0;
+    --color-ide-accent: 0 255 0;
+    --color-ide-success: 0 255 0;
+    --color-ide-error: 255 0 0;
+    --color-ide-text: 0 255 0; 
+    --color-ide-dim: 0 150 0;
+  }
+
+  /* 3. TEMA CYBERPUNK (Amarelo e Neon) */
+  [data-theme="cyberpunk"] {
+    --color-ide-bg: 253 224 71; 
+    --color-ide-panel: 0 0 0; 
+    --color-ide-border: 236 72 153; 
+    --color-ide-accent: 6 182 212; 
+    --color-ide-success: 34 197 94;
+    --color-ide-error: 220 38 38;
+    --color-ide-text: 255 255 255; 
+    --color-ide-dim: 156 163 175;
+  }
+
+  /* 4. TEMA CORPORATE (Light Mode / Faria Lima) */
+  [data-theme="corporate"] {
+    --color-ide-bg: 243 244 246; 
+    --color-ide-panel: 255 255 255; 
+    --color-ide-border: 209 213 219; 
+    --color-ide-accent: 37 99 235; 
+    --color-ide-success: 22 163 74; 
+    --color-ide-error: 220 38 38; 
+    --color-ide-text: 17 24 39; 
+    --color-ide-dim: 107 114 128; 
+  }
+
+  /* 5. TEMA BARBIE (Rosa / Pink) */
+  [data-theme="barbie"] {
+    --color-ide-bg: 253 232 246;    /* Fundo rosinha claro */
+    --color-ide-panel: 255 255 255; /* Cartões brancos */
+    --color-ide-border: 244 114 182; /* Borda rosa choque (pink-400) */
+    --color-ide-accent: 219 39 119;  /* Destaque pink forte (pink-600) */
+    --color-ide-success: 34 197 94;  /* Verde mantido para coerência de acertos */
+    --color-ide-error: 225 29 72;    /* Vermelho rosado (rose-600) */
+    --color-ide-text: 131 24 67;     /* Texto rosa bem escuro (pink-900) */
+    --color-ide-dim: 190 24 93;      /* Texto secundário rosa médio (pink-700) */
+  }
+
+  /* 6. TEMA AURA (Roxo escuro elegante e tons pastéis) */
+  [data-theme="aura"] {
+    --color-ide-bg: 21 20 27;       /* #15141b - Fundo super escuro roxeado */
+    --color-ide-panel: 33 32 46;    /* #21202e - Fundo dos painéis */
+    --color-ide-border: 59 58 82;   /* #3b3a52 - Borda sutil */
+    --color-ide-accent: 162 119 255;/* #a277ff - Roxo claro (Aura Purple) */
+    --color-ide-success: 97 255 202;/* #61ffca - Verde água/Teal */
+    --color-ide-error: 255 103 103; /* #ff6767 - Vermelho suave */
+    --color-ide-text: 237 236 238;  /* #edecee - Branco gelo */
+    --color-ide-dim: 109 109 109;   /* #6d6d6d - Cinza médio para textos secundários */
+  }
+
+  /* 7. TEMA NORD (Ártico, frio e minimalista) */
+  [data-theme="nord"] {
+    --color-ide-bg: 46 52 64;       /* #2e3440 - Fundo azul acinzentado */
+    --color-ide-panel: 59 66 82;    /* #3b4252 - Painéis um pouco mais claros */
+    --color-ide-border: 67 76 94;   /* #434c5e - Bordas */
+    --color-ide-accent: 136 192 208;/* #88c0d0 - Azul gelo (Frost) */
+    --color-ide-success: 163 190 140;/* #a3be8c - Verde pastel (Aurora) */
+    --color-ide-error: 191 97 106;  /* #bf616a - Vermelho fechado */
+    --color-ide-text: 236 239 244;  /* #eceff4 - Branco neve */
+    --color-ide-dim: 120 135 156;   /* #78879c - Azul acinzentado para texto secundário */
+  }
+
+  [data-theme="troll"] {
+    --color-ide-bg: 255 0 255;      /* Magenta Neon que queima os olhos */
+    --color-ide-panel: 255 255 0;   /* Amarelo Marca-Texto para os cartões */
+    --color-ide-border: 0 255 0;    /* Verde Limão fluorescente nas bordas */
+    --color-ide-accent: 255 0 0;    /* Vermelho puro no destaque */
+    --color-ide-success: 0 255 255; /* Ciano para os acertos */
+    --color-ide-error: 0 0 255;     /* Azul escuro nos erros (zero contraste) */
+    --color-ide-text: 0 0 0;        /* Preto absoluto para os textos */
+    --color-ide-dim: 255 0 0;       /* Vermelho para os textos secundários */
+  }
+
+  [data-theme="troll"] * {
+    font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", sans-serif !important;
+    cursor: help !important;
+  }
+}

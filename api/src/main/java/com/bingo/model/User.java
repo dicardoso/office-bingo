@@ -20,6 +20,7 @@ public class User {
     private String username;
     private String password;
     private String role = "USER";
+    private String preferredTheme = "dracula";
     private LocalDateTime creationDate = LocalDateTime.now();
     private LocalDateTime lastLoginDate = LocalDateTime.now();
 

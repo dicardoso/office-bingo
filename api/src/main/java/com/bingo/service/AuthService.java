@@ -41,6 +41,7 @@ public class AuthService {
                 savedUser.getId(),
                 savedUser.getUsername(),
                 savedUser.getPosition(),
+                savedUser.getPreferredTheme(),
                 savedUser.getCareerXp(),
                 savedUser.getSeasonXp(),
                 savedUser.getStats() != null ? user.getStats() : new User.UserStats()
@@ -64,6 +65,7 @@ public class AuthService {
                 user.getId(),
                 user.getUsername(),
                 user.getPosition(),
+                user.getPreferredTheme(),
                 user.getCareerXp(),
                 user.getSeasonXp(),
                 user.getStats()
@@ -81,5 +83,11 @@ public class AuthService {
 
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuário logado não encontrado no banco de dados."));
+    }
+
+    public void updateTheme(User user, String newTheme) {
+        user.setPreferredTheme(newTheme);
+
+        userRepository.save(user);
     }
 }
