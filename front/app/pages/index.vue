@@ -27,24 +27,24 @@
           </div>
 
           <div class="flex items-center gap-4">
-          <div class="text-right hidden sm:block">
-            <div class="text-sm font-bold text-white">{{ currentUser.username }}</div>
-            
-            <div class="flex items-center gap-2 justify-end mt-0.5">
-              <span class="text-[10px] font-mono text-ide-accent uppercase tracking-wider">
-                {{ currentUser.position || 'Estagiário' }}
-              </span>
-              <div class="w-16 h-1.5 bg-ide-dim/20 rounded-full overflow-hidden border border-ide-dim/30" :title="`XP: ${currentUser.careerXp || 0} / ${levelInfo.limit}`">
-                <div 
-                  class="h-full bg-ide-accent transition-all duration-500 ease-out" 
-                  :style="{ width: levelInfo.percent + '%' }"
-                ></div>
+            <div class="text-right hidden sm:block">
+              <div class="text-sm font-bold text-ide-text">{{ currentUser.username }}</div>
+              
+              <div class="flex items-center gap-2 justify-end mt-0.5">
+                <span class="text-[10px] font-mono text-ide-accent uppercase tracking-wider">
+                  {{ currentUser.position || 'Estagiário' }}
+                </span>
+                <div class="w-16 h-1.5 bg-ide-dim/20 rounded-full overflow-hidden border border-ide-dim/30" :title="`XP: ${currentUser.careerXp || 0} / ${levelInfo.limit}`">
+                  <div 
+                    class="h-full bg-ide-accent transition-all duration-500 ease-out" 
+                    :style="{ width: levelInfo.percent + '%' }"
+                  ></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="flex items-center gap-1 bg-ide-bg rounded-full border border-ide-border p-1">
-            <button 
+            <div class="flex items-center gap-1 bg-ide-bg rounded-full border border-ide-border p-1">
+              <button 
                 v-if="currentUser?.role === 'ADMIN'" 
                 @click="$router.push('/admin')" 
                 class="p-2 hover:bg-ide-panel rounded-full text-ide-accent hover:text-white transition-colors" 
@@ -52,15 +52,51 @@
               >
                 <CommandLineIcon class="w-5 h-5" />
               </button>
-            <button @click="openProfile" class="p-2 hover:bg-ide-panel rounded-full text-ide-dim hover:text-white transition-colors" title="View Profile Stats">
-              <UserCircleIcon class="w-5 h-5" />
-            </button>
-            <div class="w-px h-4 bg-ide-border bg-ide-dim"></div>
-            <button @click="logout" class="p-2 hover:bg-ide-panel rounded-full text-red-400 hover:bg-red-400/10 transition-colors" title="Exit Process">
-              <ArrowRightOnRectangleIcon class="w-5 h-5" />
-            </button>
+              <button @click="openProfile" class="p-2 hover:bg-ide-panel rounded-full text-ide-dim hover:text-ide-text transition-colors" title="View Profile Stats">
+                <UserCircleIcon class="w-5 h-5" />
+              </button>
+              <div class="relative">
+                <button 
+                  @click="showThemeMenu = !showThemeMenu" 
+                  :disabled="currentTheme === 'troll'"
+                  class="p-2 rounded-full transition-colors"
+                  :class="currentTheme === 'troll' ? 'opacity-30 cursor-not-allowed text-ide-error' : 'hover:bg-ide-panel text-ide-dim hover:text-ide-text'"
+                  :title="currentTheme === 'troll' ? 'HACKED: Você perdeu o direito de escolher! 😈' : 'Mudar Tema'"
+                >
+                  <SwatchIcon class="w-5 h-5" />
+                </button>
+
+                <transition
+                    enter-active-class="transition duration-100 ease-out"
+                    enter-from-class="transform scale-95 opacity-0"
+                    leave-active-class="transition duration-75 ease-in"
+                    leave-to-class="transform scale-95 opacity-0"
+                >
+                    <div v-if="showThemeMenu" class="absolute right-0 mt-2 w-48 bg-ide-panel border border-ide-border rounded-lg shadow-2xl z-50 overflow-hidden">
+                        <div class="px-3 py-2 border-b border-ide-border text-[10px] font-mono text-ide-dim uppercase tracking-wider">
+                            Select Theme
+                        </div>
+                        <div class="p-1">
+                            <button 
+                                v-for="theme in availableThemes" 
+                                :key="theme.id"
+                                @click="changeTheme(theme.id)"
+                                class="w-full text-left flex items-center gap-3 px-3 py-2 text-sm rounded hover:bg-ide-bg transition-colors"
+                                :class="currentTheme === theme.id ? 'text-ide-accent font-bold bg-ide-bg/50' : 'text-ide-text'"
+                            >
+                                <span>{{ theme.icon }}</span>
+                                {{ theme.name }}
+                            </button>
+                        </div>
+                    </div>
+                </transition>
+              </div>
+              <div class="w-px h-4 bg-ide-border bg-ide-dim"></div>
+              <button @click="logout" class="p-2 hover:bg-ide-panel rounded-full text-red-400 hover:bg-red-400/10 transition-colors" title="Exit Process">
+                <ArrowRightOnRectangleIcon class="w-5 h-5" />
+              </button>
+            </div>
           </div>
-        </div>
         </div>
       </header>
 
@@ -145,10 +181,10 @@
               <div class="flex-1">
                 <div class="flex justify-between items-center text-sm mb-1">
                   <div class="flex items-center gap-2">
-                    <span class="font-bold group-hover:underline decoration-ide-dim underline-offset-2" :class="player.markedCount === 9 ? 'text-yellow-400' : 'text-white'">
+                    <span class="font-bold group-hover:underline decoration-ide-dim underline-offset-2" :class="player.markedCount === 9 ? 'text-ide-accent' : 'text-ide-text'">
                       {{ player.username }}
                     </span>
-                    <div v-if="player.completed" class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-yellow-400/10 border border-yellow-400/50 text-yellow-400 text-[10px] font-mono font-bold uppercase">
+                    <div v-if="player.completed" class="flex items-center gap-1 px-1.5 py-0.5 rounded bg-ide-accent/10 border border-ide-accent/50 text-ide-accent text-[10px] font-mono font-bold uppercase transition-colors">
                       <TrophyIcon class="w-3 h-3" />
                     </div>
                   </div>
@@ -189,11 +225,11 @@
                       <ChartBarIcon class="w-6 h-6 text-ide-accent" />
                     </div>
                     <div>
-                      <h3 class="font-mono font-bold text-white text-lg">Player Stats</h3>
+                      <h3 class="font-mono font-bold text-ide-text text-lg">Player Stats</h3>
                       <p class="text-xs text-ide-dim font-mono">~/profile/{{ currentUser.username }}.json</p>
                     </div>
                 </div>
-                <button @click="showProfile = false" class="text-ide-dim hover:text-white">
+                <button @click="showProfile = false" class="text-ide-dim hover:text-ide-text">
                     <span class="font-mono text-xs">[ ESC ]</span>
                 </button>
               </div>
@@ -204,7 +240,7 @@
                   <div class="inline-block px-3 py-1 rounded-full bg-ide-accent/10 border border-ide-accent/20 text-ide-accent text-xs font-bold font-mono mb-2 uppercase tracking-widest">
                     {{ currentUser.position || 'Estagiário' }}
                   </div>
-                  <h2 class="text-3xl font-bold text-white mb-1">{{ currentUser.careerXp || 0 }} XP</h2>
+                  <h2 class="text-3xl font-bold text-ide-text mb-1">{{ currentUser.careerXp || 0 }} XP</h2>
                   <p class="text-xs text-ide-dim mb-4">Lifetime Experience</p>
                   
                   <div class="relative h-4 bg-ide-bg rounded-full overflow-hidden border border-ide-border">
@@ -212,7 +248,7 @@
                       class="h-full bg-gradient-to-r from-blue-500 to-ide-accent transition-all duration-1000 ease-out"
                       :style="{ width: levelInfo.percent + '%' }"
                     ></div>
-                    <div class="absolute inset-0 flex items-center justify-between px-3 text-[9px] font-mono font-bold text-white/50 mix-blend-difference">
+                    <div class="absolute inset-0 flex items-center justify-between px-3 text-[9px] font-mono font-bold text-ide-text mix-blend-difference">
                       <span>CURRENT</span>
                       <span>NEXT: {{ levelInfo.nextLevel }}</span>
                     </div>
@@ -223,7 +259,7 @@
 
                 <div class="grid grid-cols-3 gap-4">
                   <div class="bg-ide-bg p-3 rounded border border-ide-border text-center">
-                    <div class="text-2xl font-bold text-white">{{ currentUser.stats?.totalGamesPlayed || 0 }}</div>
+                    <div class="text-2xl font-bold text-ide-text">{{ currentUser.stats?.totalGamesPlayed || 0 }}</div>
                     <div class="text-[10px] text-ide-dim font-mono uppercase mt-1">Games Played</div>
                   </div>
                   <div class="bg-ide-bg p-3 rounded border border-ide-border text-center">
@@ -238,7 +274,7 @@
 
                 <div class="bg-ide-bg/50 p-4 rounded border border-ide-border flex justify-between items-center">
                   <div>
-                    <div class="text-sm font-bold text-white">Season Progress</div>
+                    <div class="text-sm font-bold text-ide-text">Season Progress</div>
                     <div class="text-xs text-ide-dim">Resets monthly</div>
                   </div>
                   <div class="text-right">
@@ -265,9 +301,9 @@
           <div class="bg-ide-bg px-4 py-3 border-b border-ide-border flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <CodeBracketIcon class="w-5 h-5 text-ide-accent" />
-                <span class="font-mono font-bold text-white">Reviewing: {{ inspectedUser }}</span>
+                <span class="font-mono font-bold text-ide-text">Reviewing: {{ inspectedUser }}</span>
             </div>
-            <button @click="closeInspection" class="text-ide-dim hover:text-white">
+            <button @click="closeInspection" class="text-ide-dim hover:text-ide-text">
                 <span class="font-mono text-xs">[ ESC ]</span>
             </button>
           </div>
@@ -325,7 +361,7 @@
         <div class="bg-ide-panel border-2 rounded-lg shadow-2xl overflow-hidden flex flex-col"
              :class="activeAudit.status === 'OPEN' ? 'border-red-500 shadow-red-900/50' : (activeAudit.status === 'GUILTY' ? 'border-ide-error' : 'border-ide-success')">
           
-          <div class="px-4 py-3 flex justify-between items-center text-white font-bold font-mono text-sm uppercase tracking-wider relative overflow-hidden"
+          <div class="px-4 py-3 flex justify-between items-center text-ide-text font-bold font-mono text-sm uppercase tracking-wider relative overflow-hidden"
                :class="activeAudit.status === 'OPEN' ? 'bg-red-600' : 'bg-ide-panel border-b border-ide-border'">
             
             <div v-if="activeAudit.status === 'OPEN'" class="absolute inset-0 bg-white/10 animate-pulse"></div>
@@ -343,7 +379,7 @@
                 <p class="text-xs text-ide-dim font-mono mb-2">
                     <span class="text-red-400 font-bold">@{{ activeAudit.auditorName }}</span> questiona a verdade:
                 </p>
-                <div class="text-lg font-bold text-white border border-ide-dim/30 rounded-lg p-3 bg-ide-panel shadow-inner">
+                <div class="text-lg font-bold text-ide-text border border-ide-dim/30 rounded-lg p-3 bg-ide-panel shadow-inner">
                     "{{ activeAudit.slotPhrase || 'Carregando prova...' }}" 
                 </div>
                 <p class="text-xs text-ide-dim font-mono mt-2">
@@ -405,7 +441,8 @@ import {
   UserCircleIcon,
   ScaleIcon,
   ShieldCheckIcon,
-  CommandLineIcon
+  CommandLineIcon,
+  SwatchIcon
 } from '@heroicons/vue/24/outline'
 import {useSound} from '@/composables/useSound';
 import {version} from '../../package.json'
@@ -435,6 +472,18 @@ const showProfile = ref(false)
 const isLoadingProfile = ref(false)
 
 const appVersion = version
+const availableThemes = [
+  { id: 'dracula', name: 'Dark IDE', icon: '🌙' },
+  { id: 'matrix', name: 'Matrix', icon: '💻' },
+  { id: 'cyberpunk', name: 'Cyberpunk', icon: '🌆' },
+  { id: 'corporate', name: 'Corporate (Light)', icon: '👔' },
+  { id: 'barbie', name: 'Barbie Dev', icon: '💅' },
+  { id: 'aura', name: 'Aura Dark', icon: '✨' },
+  { id: 'nord', name: 'Nord Arctic', icon: '❄️' }
+]
+
+const currentTheme = ref('matrix')
+const showThemeMenu = ref(false)
 
 const connectSocket = () => {
   const socket = new SockJS(`http://172.16.155.182:8080/ws`)
@@ -554,12 +603,9 @@ const openProfile = async () => {
   isLoadingProfile.value = true
 
   try {
-    const updatedUser = await api('/auth/me')
-    
-    currentUser.value = updatedUser
-    localStorage.setItem('bingo_user', JSON.stringify(updatedUser))
+    await syncCurrentUser()
   } catch (error) {
-    console.error("Erro ao carregar perfil", error)
+    // O erro já foi logado na função principal, você pode adicionar um alert() aqui se quiser
   } finally {
     isLoadingProfile.value = false
   }
@@ -644,6 +690,7 @@ const handleAuditStart = (session) => {
         }
     }, 1000)
 }
+
 const checkActiveAudit = async () => {
     try {
         const session = await api('/game/audit/current')
@@ -700,10 +747,67 @@ const voteCounts = computed(() => {
   return { yes, no, total: votes.length }
 })
 
-onMounted(() => {
+const changeTheme = async (themeId) => {
+  currentTheme.value = themeId
+  showThemeMenu.value = false
+
+  document.documentElement.setAttribute('data-theme', themeId)
+  localStorage.setItem('bingo_theme', themeId)
+
+  try {
+    await api('/auth/theme', {
+      method: 'PATCH',
+      body: { theme: themeId }
+    })
+
+    if (currentUser.value) {
+        currentUser.value.preferredTheme = themeId
+        localStorage.setItem('bingo_user', JSON.stringify(currentUser.value))
+    }
+  } catch (err) {
+    console.error("Erro ao salvar tema no servidor", err)
+  }
+}
+
+const syncCurrentUser = async () => {
+  try {
+    const freshUser = await api('/auth/me')
+    
+    currentUser.value = freshUser
+    localStorage.setItem('bingo_user', JSON.stringify(freshUser))
+    
+    return freshUser
+  } catch (error) {
+    console.error("Falha ao sincronizar dados do usuário:", error)
+    throw error
+  }
+}
+
+watch(currentTheme, (newTheme) => {
+  document.documentElement.setAttribute('data-theme', newTheme)
+  localStorage.setItem('bingo_theme', newTheme)
+})
+
+onMounted(async () => {
+  const savedTheme = localStorage.getItem('bingo_theme')
+  if (savedTheme) {
+    currentTheme.value = savedTheme
+  }
   currentUser.value = JSON.parse(localStorage.getItem('bingo_user')) || 'Dev'
+  
   connectSocket()
   loadData()
   checkActiveAudit()
+
+  try {
+    const freshUser = await syncCurrentUser()
+    
+    const realTheme = freshUser.preferredTheme || 'dracula'
+    if (realTheme !== currentTheme.value) {
+        currentTheme.value = realTheme
+    }
+  } catch (error) {
+    console.log("Não foi possível validar o tema em background.")
+  }
 })
 </script>

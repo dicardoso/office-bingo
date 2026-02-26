@@ -1,6 +1,7 @@
 package com.bingo.controller;
 
 import com.bingo.dto.AuthDto.*;
+import com.bingo.dto.ThemeRequest;
 import com.bingo.dto.UserDto;
 import com.bingo.model.User;
 import com.bingo.repository.UserRepository;
@@ -36,5 +37,13 @@ public class AuthController {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
         return ResponseEntity.ok(UserDto.UserResponse.fromUser(user));
+    }
+
+    @PatchMapping("/theme")
+    public ResponseEntity<Void> updateTheme(@RequestBody ThemeRequest request) {
+        User currentUser = authService.getCurrentUser();
+        authService.updateTheme(currentUser, request.theme());
+
+        return ResponseEntity.ok().build();
     }
 }
