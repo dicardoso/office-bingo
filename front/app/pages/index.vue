@@ -44,6 +44,14 @@
             </div>
 
             <div class="flex items-center gap-1 bg-ide-bg rounded-full border border-ide-border p-1">
+              <button 
+                v-if="currentUser?.role === 'ADMIN'" 
+                @click="$router.push('/admin')" 
+                class="p-2 hover:bg-ide-panel rounded-full text-ide-accent hover:text-white transition-colors" 
+                title="Abrir Terminal Admin"
+              >
+                <CommandLineIcon class="w-5 h-5" />
+              </button>
               <button @click="openProfile" class="p-2 hover:bg-ide-panel rounded-full text-ide-dim hover:text-ide-text transition-colors" title="View Profile Stats">
                 <UserCircleIcon class="w-5 h-5" />
               </button>
@@ -433,6 +441,7 @@ import {
   UserCircleIcon,
   ScaleIcon,
   ShieldCheckIcon,
+  CommandLineIcon,
   SwatchIcon
 } from '@heroicons/vue/24/outline'
 import {useSound} from '@/composables/useSound';
@@ -660,6 +669,7 @@ const logout = () => {
 const handleAuditStart = (session) => {
     activeAudit.value = session
     // play('notification')
+
     const startTime = new Date(session.startTime).getTime()
     const now = new Date().getTime()
     const elapsedSeconds = Math.floor((now - startTime) / 1000)
