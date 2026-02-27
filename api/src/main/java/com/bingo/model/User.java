@@ -39,7 +39,9 @@ public class User {
     @Builder.Default
     private UserStats stats = new UserStats();
 
-    // Classe interna para estatísticas
+    @Builder.Default
+    private boolean suspended = false;
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

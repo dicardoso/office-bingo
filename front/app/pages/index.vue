@@ -446,16 +446,17 @@ import {
 } from '@heroicons/vue/24/outline'
 import {useSound} from '@/composables/useSound';
 import {version} from '../../package.json'
+import { useSocket } from '@/composables/useSocket'
 
 const { play } = useSound()
 const api = useAPI()
 const router = useRouter()
 const config = useRuntimeConfig()
+const { isConnected: socketConnected, connect, subscribe } = useSocket()
 
 const currentUser = ref('')
 const card = ref(null)
 const leaderboard = ref([])
-const socketConnected = ref(false)
 const lastWinner = ref(null)
 const isLoading = ref(true)
 
@@ -485,40 +486,25 @@ const availableThemes = [
 const currentTheme = ref('matrix')
 const showThemeMenu = ref(false)
 
-const connectSocket = () => {
-  const socket = new SockJS(`http://172.16.155.182:8080/ws`)
-  console.log(socket)
-  const stompClient = Stomp.over(socket)
-  
-  stompClient.debug = () => {}
-
-  stompClient.connect({}, () => {
-    socketConnected.value = true
-    
-    stompClient.subscribe('/topic/progress', (tick) => {
-      const update = JSON.parse(tick.body)
-      if (update.username !== currentUser.value.username) {
-        // play('notification');
-      }
-      updateLeaderboardLocal(update)
-    })
-
-    stompClient.subscribe('/topic/winners', (tick) => {
-      const winner = JSON.parse(tick.body)
-      handleWinner(winner)
-    })
-    stompClient.subscribe('/topic/audit/start', (msg) => handleAuditStart(JSON.parse(msg.body)))
-    stompClient.subscribe('/topic/audit/update', (msg) => {
-        if (activeAudit.value && activeAudit.value.id === JSON.parse(msg.body).id) {
-            activeAudit.value = JSON.parse(msg.body)
-        }
-    })
-    stompClient.subscribe('/topic/audit/end', (msg) => handleAuditEnd(JSON.parse(msg.body)))
-  }, (err) => {
-    console.error('Socket connection error:', err)
-    socketConnected.value = false
-    setTimeout(connectSocket, 5000)
+const setupSocketListeners = () => {
+  subscribe('/topic/progress', (tick) => {
+    const update = JSON.parse(tick.body)
+    updateLeaderboardLocal(update)
   })
+
+  subscribe('/topic/winners', (tick) => {
+    handleWinner(JSON.parse(tick.body))
+  })
+  
+  subscribe('/topic/audit/start', (msg) => handleAuditStart(JSON.parse(msg.body)))
+  
+  subscribe('/topic/audit/update', (msg) => {
+      if (activeAudit.value && activeAudit.value.id === JSON.parse(msg.body).id) {
+          activeAudit.value = JSON.parse(msg.body)
+      }
+  })
+  
+  subscribe('/topic/audit/end', (msg) => handleAuditEnd(JSON.parse(msg.body)))
 }
 
 const updateLeaderboardLocal = (update) => {
@@ -605,7 +591,7 @@ const openProfile = async () => {
   try {
     await syncCurrentUser()
   } catch (error) {
-    // O erro já foi logado na função principal, você pode adicionar um alert() aqui se quiser
+    // O erro já foi logado na função principal, adicionar um alert() caso quiera
   } finally {
     isLoadingProfile.value = false
   }
@@ -795,13 +781,19 @@ onMounted(async () => {
   }
   currentUser.value = JSON.parse(localStorage.getItem('bingo_user')) || 'Dev'
   
-  connectSocket()
   loadData()
   checkActiveAudit()
 
+  connect(currentUser.value.id)
+
+  watch(isConnected, (connected) => {
+    if (connected) {
+      setupSocketListeners()
+    }
+  }, { immediate: true })
+
   try {
     const freshUser = await syncCurrentUser()
-    
     const realTheme = freshUser.preferredTheme || 'dracula'
     if (realTheme !== currentTheme.value) {
         currentTheme.value = realTheme
