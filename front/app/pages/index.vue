@@ -429,8 +429,6 @@
   </div>
 </template>
 <script setup>
-import SockJS from 'sockjs-client'
-import Stomp from 'webstomp-client'
 import confetti from 'canvas-confetti'
 import {
   ArrowRightOnRectangleIcon,
@@ -786,7 +784,7 @@ onMounted(async () => {
 
   connect(currentUser.value.id)
 
-  watch(isConnected, (connected) => {
+  watch(socketConnected, (connected) => {
     if (connected) {
       setupSocketListeners()
     }
