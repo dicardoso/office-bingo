@@ -100,6 +100,9 @@ public class BingoService {
     }
 
     public BingoCard markSlot(User user, int position) {
+        if (user.isSuspended()) {
+            throw new IllegalStateException("Conta suspensa não pode interagir com a cartela.");
+        }
         BingoCard card = getOrCreateDailyCard(user);
 
         boolean changed = false;

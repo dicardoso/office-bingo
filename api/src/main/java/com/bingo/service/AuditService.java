@@ -36,6 +36,10 @@ public class AuditService {
     private final AuditSessionRepository auditRepository;
 
     public AuditSession startAudit(AuditRequest req, User auditor) {
+        if (auditor.isSuspended()) {
+            throw new IllegalStateException("Contas suspensas perderam o direito de abrir processos no Tribunal.");
+        }
+
         if (req.accusedId().equals(auditor.getId())) {
             throw new IllegalArgumentException("Você não pode se auto-auditar (conflito de interesse).");
         }
@@ -84,6 +88,9 @@ public class AuditService {
     }
 
     public void processVote(VoteRequest req, User voter) {
+        if (voter.isSuspended()) {
+            throw new IllegalStateException("Contas suspensas não têm direito a voto.");
+        }
         AuditSession session = auditRepository.findById(req.auditId())
                 .orElseThrow(() -> new IllegalArgumentException("Sessão de auditoria não encontrada."));
 
