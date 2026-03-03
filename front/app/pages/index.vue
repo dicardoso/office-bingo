@@ -177,12 +177,26 @@
           </div>
         </main>
 
-        <aside class="bg-ide-panel rounded-lg border border-ide-border h-fit shadow-xl">
-          <div class="bg-ide-bg px-4 py-2 border-b border-ide-border">
-            <span class="text-xs font-mono text-ide-dim">CONTRIBUTORS.md</span>
+        <aside class="bg-ide-panel rounded-lg border border-ide-border h-fit shadow-xl overflow-hidden">
+          
+          <div class="bg-ide-bg border-b border-ide-border flex">
+            <button 
+              @click="activeSidebarTab = 'daily'"
+              class="flex-1 py-2 text-[10px] font-mono tracking-widest uppercase transition-colors border-b-2"
+              :class="activeSidebarTab === 'daily' ? 'border-ide-accent text-ide-accent font-bold' : 'border-transparent text-ide-dim hover:bg-ide-panel hover:text-white'"
+            >
+              daily_build.md
+            </button>
+            <button 
+              @click="activeSidebarTab = 'season'; fetchRanking()"
+              class="flex-1 py-2 text-[10px] font-mono tracking-widest uppercase transition-colors border-b-2"
+              :class="activeSidebarTab === 'season' ? 'border-ide-accent text-ide-accent font-bold' : 'border-transparent text-ide-dim hover:bg-ide-panel hover:text-white'"
+            >
+              season_rank.json
+            </button>
           </div>
           
-          <div class="p-4 space-y-3">
+          <div v-if="activeSidebarTab === 'daily'" class="p-4 space-y-3 animate-fade-in">
             <div 
               v-for="(player, index) in leaderboard" 
               :key="index"
@@ -205,7 +219,6 @@
                       <TrophyIcon class="w-3 h-3" />
                     </div>
                   </div>
-
                   <span class="font-mono" :class="player.markedCount === 9 ? 'text-yellow-400' : 'text-ide-dim'">
                     {{ player.markedCount }}/9
                   </span>
@@ -220,9 +233,45 @@
                 </div>
               </div>
             </div>
-            
              <div v-if="leaderboard.length > 0" class="mt-4 text-[10px] text-center text-ide-dim font-mono">
                 [ CLICK ON USER TO CODE REVIEW ]
+            </div>
+          </div>
+
+          <div v-if="activeSidebarTab === 'season'" class="p-4 space-y-3 animate-fade-in">
+            <div v-if="isLoadingRanking" class="text-center text-ide-dim text-xs py-8 animate-pulse font-mono">
+              Loading rankings...
+            </div>
+            <div v-else>
+              <div 
+                v-for="(player, index) in seasonRanking" 
+                :key="player.id"
+                class="flex items-center gap-3 p-2 rounded border border-transparent hover:bg-ide-bg/50 transition-colors group"
+                :class="index === 0 ? 'bg-yellow-500/5 border-yellow-500/20' : ''"
+              >
+                <div class="font-mono w-6 text-right text-lg" :class="getRankColor(index)">
+                  <span v-if="index === 0">👑</span>
+                  <span v-else>#{{ index + 1 }}</span>
+                </div>
+                
+                <div class="flex-1">
+                  <div class="flex justify-between items-end">
+                    <div>
+                      <div class="font-bold text-ide-text text-sm" :class="index === 0 ? 'text-yellow-400' : ''">
+                        {{ player.username }}
+                      </div>
+                      <div class="text-[9px] font-mono text-ide-dim uppercase tracking-wider mt-0.5">
+                        {{ player.position || 'Estagiário' }} • {{ player.totalBingos }} Bingos
+                      </div>
+                    </div>
+                    
+                    <div class="text-right">
+                      <div class="font-bold font-mono text-ide-accent">{{ player.seasonXp }}</div>
+                      <div class="text-[8px] font-mono text-ide-dim uppercase">XP MENSAL</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </aside>
@@ -832,5 +881,30 @@ onMounted(async () => {
   }
 })
 
+
+const activeSidebarTab = ref('daily')
+const seasonRanking = ref([])
+const isLoadingRanking = ref(false)
+
+const fetchRanking = async () => {
+  if (seasonRanking.value.length > 0) return
+  
+  isLoadingRanking.value = true
+  try {
+    seasonRanking.value = await api('/game/ranking')
+  } catch (e) {
+    console.error("Erro ao buscar ranking da temporada", e)
+  } finally {
+    isLoadingRanking.value = false
+  }
+}
+
+// Pequena função para as cores do pódio (Ouro, Prata, Bronze)
+const getRankColor = (index) => {
+  if (index === 0) return 'text-yellow-400 font-bold' // 1º
+  if (index === 1) return 'text-gray-300 font-bold'   // 2º
+  if (index === 2) return 'text-amber-600 font-bold'  // 3º
+  return 'text-ide-dim'                               // Resto
+}
 
 </script>

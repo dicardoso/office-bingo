@@ -1,6 +1,7 @@
 package com.bingo.service;
 
 import com.bingo.dto.RoleUpdateRequest;
+import com.bingo.dto.SeasonRankingResponse;
 import com.bingo.dto.SuspendRequest;
 import com.bingo.dto.XpUpdateRequest;
 import com.bingo.model.User;
@@ -63,7 +64,6 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
 
-        // Aplica o castigo supremo
         user.setPreferredTheme("troll");
         return userRepository.save(user);
     }
@@ -71,8 +71,19 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
 
-        // Remove o castigo voltando para o tema padrão
         user.setPreferredTheme("default");
         return userRepository.save(user);
+    }
+
+    public List<SeasonRankingResponse> getSeasonRanking() {
+        return userRepository.findTop10ByOrderBySeasonXpDesc().stream()
+                .map(u -> new SeasonRankingResponse(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getPosition(),
+                        u.getSeasonXp(),
+                        u.getStats().getTotalBingos()
+                ))
+                .toList();
     }
 }
