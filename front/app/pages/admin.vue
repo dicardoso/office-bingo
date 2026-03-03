@@ -513,9 +513,10 @@ onMounted(() => {
 const broadcastText = ref('')
 
 const sendBroadcast = async () => {
-  if (!broadcastText.value) return
+  const message = broadcastText.value.trim()
+  if (!message) return
   try {
-    await api('/admin/game/broadcast', { method: 'POST', body: { message: broadcastText.value } })
+    await api('/admin/game/broadcast', { method: 'POST', body: { message } })
     broadcastText.value = '' // limpa o campo
   } catch (err) {
     alert("Erro ao enviar mensagem.")
