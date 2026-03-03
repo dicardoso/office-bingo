@@ -119,6 +119,23 @@
         </div>
       </transition>
 
+      <transition 
+        enter-active-class="transform transition duration-500 ease-out" 
+        enter-from-class="-translate-y-full opacity-0"
+        leave-active-class="transform transition duration-500 ease-in"
+        leave-to-class="-translate-y-full opacity-0"
+      >
+        <div v-if="adminMessage" class="fixed top-24 left-0 right-0 z-[100] flex justify-center pointer-events-none">
+          <div class="bg-ide-accent text-ide-bg px-6 py-3 rounded-lg shadow-[0_0_30px_rgba(0,0,0,0.5)] border-2 border-white flex items-center gap-3 max-w-2xl transform scale-105">
+            <span class="text-2xl animate-bounce">📢</span>
+            <div>
+              <h3 class="font-black text-[10px] font-mono uppercase tracking-widest opacity-80">Mensagem do Game Master</h3>
+              <p class="font-bold text-sm">{{ adminMessage }}</p>
+            </div>
+          </div>
+        </div>
+      </transition>
+
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <main class="lg:col-span-2 space-y-4">
@@ -484,6 +501,8 @@ const availableThemes = [
 const currentTheme = ref('matrix')
 const showThemeMenu = ref(false)
 
+const adminMessage = ref(null)
+
 const setupSocketListeners = () => {
   subscribe('/topic/progress', (tick) => {
     const update = JSON.parse(tick.body)
@@ -503,10 +522,23 @@ const setupSocketListeners = () => {
   })
   
   subscribe('/topic/audit/end', (msg) => handleAuditEnd(JSON.parse(msg.body)))
+
+  subscribe('/topic/broadcast', (msg) => {
+      const data = JSON.parse(msg.body)
+      
+      if (data.type === 'RELOAD_CARDS') {
+          loadData() 
+      }
+      
+      if (data.message) {
+          adminMessage.value = data.message
+          play('notification')
+          setTimeout(() => { adminMessage.value = null }, 8000)
+      }
+  })
 }
 
 const updateLeaderboardLocal = (update) => {
-  console.log(update)
   const player = leaderboard.value.find(u => u.username === update.username)
   if (player) {
     player.markedCount = update.markedCount
@@ -609,7 +641,6 @@ const inspectPlayer = async (player) => {
       if (cardData.userId) inspectedUserId.value = cardData.userId
     } catch (e) {
         console.error("Erro ao inspecionar", e)
-        console.log(e)
         alert("Não foi possível carregar o código fonte deste usuário.")
         closeInspection()
     } finally {
@@ -800,4 +831,6 @@ onMounted(async () => {
     console.log("Não foi possível validar o tema em background.")
   }
 })
+
+
 </script>

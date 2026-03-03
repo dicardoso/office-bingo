@@ -20,7 +20,6 @@ export function useSocket() {
       stompClient.value = client
       
       if (userId) {
-        console.log(userId)
         client.send("/app/presence/connect", String(userId), {})
       }
       
