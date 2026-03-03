@@ -501,6 +501,8 @@ const availableThemes = [
 const currentTheme = ref('matrix')
 const showThemeMenu = ref(false)
 
+const adminMessage = ref(null)
+
 const setupSocketListeners = () => {
   subscribe('/topic/progress', (tick) => {
     const update = JSON.parse(tick.body)
@@ -520,6 +522,20 @@ const setupSocketListeners = () => {
   })
   
   subscribe('/topic/audit/end', (msg) => handleAuditEnd(JSON.parse(msg.body)))
+
+  subscribe('/topic/broadcast', (msg) => {
+      const data = JSON.parse(msg.body)
+      
+      if (data.type === 'RELOAD_CARDS') {
+          loadData() 
+      }
+      
+      if (data.message) {
+          adminMessage.value = data.message
+          play('notification')
+          setTimeout(() => { adminMessage.value = null }, 8000)
+      }
+  })
 }
 
 const updateLeaderboardLocal = (update) => {
@@ -816,18 +832,5 @@ onMounted(async () => {
   }
 })
 
-const adminMessage = ref(null)
 
-  subscribe('/topic/broadcast', (msg) => {
-      const data = JSON.parse(msg.body)
-      
-      if (data.type === 'RELOAD_CARDS') {
-          loadData() 
-      }
-      
-      adminMessage.value = data.message
-      play('notification')
-      
-      setTimeout(() => { adminMessage.value = null }, 8000)
-  })
 </script>
