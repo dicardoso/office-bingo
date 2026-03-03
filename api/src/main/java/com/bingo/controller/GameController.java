@@ -1,10 +1,13 @@
 package com.bingo.controller;
 
+import com.bingo.dto.SeasonRankingResponse;
 import com.bingo.model.BingoCard;
 import com.bingo.model.User;
 import com.bingo.repository.UserRepository;
 import com.bingo.service.BingoService;
+import com.bingo.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +19,7 @@ import java.util.List;
 public class GameController {
 
     private final BingoService bingoService;
+    private final UserService userService;
     private final UserRepository userRepository;
 
     private User getUser(Authentication auth) {
@@ -44,5 +48,9 @@ public class GameController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return bingoService.getOrCreateDailyCard(targetUser);
+    }
+    @GetMapping("/ranking")
+    public ResponseEntity<List<SeasonRankingResponse>> getSeasonRanking() {
+        return ResponseEntity.ok(userService.getSeasonRanking());
     }
 }
