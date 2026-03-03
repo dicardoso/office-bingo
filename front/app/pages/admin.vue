@@ -27,6 +27,13 @@
         >
           👥 users.config
         </button>
+        <button 
+          @click="activeTab = 'game'" 
+          class="px-4 py-2 text-sm font-mono transition-colors border-b-2"
+          :class="activeTab === 'game' ? 'border-ide-accent text-ide-accent bg-ide-panel' : 'border-transparent text-ide-dim hover:text-white hover:bg-ide-panel/50'"
+        >
+          🎮 game_master.sh
+        </button>
       </div>
 
       <div v-if="activeTab === 'phrases'" class="bg-ide-panel rounded-lg border border-ide-border shadow-2xl overflow-hidden animate-fade-in">
@@ -124,6 +131,52 @@
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div v-if="activeTab === 'game'" class="space-y-6 animate-fade-in">
+        
+        <div class="bg-ide-panel rounded-lg border border-ide-border shadow-2xl overflow-hidden p-6">
+          <h3 class="text-lg font-bold text-ide-text flex items-center gap-2 mb-2">
+            📢 Megafone Global
+          </h3>
+          <p class="text-xs text-ide-dim mb-4">Envie uma mensagem pop-up na tela de todos os usuários logados instantaneamente.</p>
+          
+          <div class="flex gap-2">
+            <input 
+              v-model="broadcastText" 
+              @keyup.enter="sendBroadcast"
+              type="text" 
+              class="flex-1 bg-ide-bg border border-ide-border rounded p-2 text-sm text-white focus:border-ide-accent outline-none font-mono"
+              placeholder="Ex: Reunião geral na copa em 5 minutos! Quem perder leva bingo!"
+            >
+            <button 
+              @click="sendBroadcast"
+              :disabled="!broadcastText"
+              class="bg-ide-accent text-ide-bg px-6 py-2 rounded font-bold font-mono text-sm disabled:opacity-50 transition-colors hover:bg-white"
+            >
+              ENVIAR ALERT
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-ide-panel rounded-lg border border-ide-border shadow-2xl p-6 border-l-4 border-l-yellow-500">
+            <h3 class="text-lg font-bold text-yellow-500 mb-2">Re-Sortear Cartelas</h3>
+            <p class="text-xs text-ide-dim mb-6">Deleta as cartelas de hoje de todos os usuários. O sistema irá gerar cartelas novas automaticamente nos bastidores usando as frases ativas mais recentes.</p>
+            <button @click="forceNewCards" class="w-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/50 hover:bg-yellow-500 hover:text-white px-4 py-3 rounded font-bold font-mono text-sm transition-all">
+              EMBARALHAR AGORA
+            </button>
+          </div>
+
+          <div class="bg-ide-panel rounded-lg border border-red-900/50 shadow-2xl p-6 border-l-4 border-l-red-500">
+            <h3 class="text-lg font-bold text-red-500 mb-2">Fim de Temporada</h3>
+            <p class="text-xs text-ide-dim mb-6">Zera o <b>Season XP</b> de TODOS os usuários cadastrados (o Career XP é mantido). Esta ação é irreversível e marca o início de um novo mês de jogo.</p>
+            <button @click="resetSeason" class="w-full bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white px-4 py-3 rounded font-bold font-mono text-sm transition-all">
+              ZERAR TEMPORADA
+            </button>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -453,6 +506,50 @@ onMounted(() => {
   fetchPhrases()
   fetchUsers()
 })
+
+// ==========================================
+// LÓGICA DO GAME MASTER
+// ==========================================
+const broadcastText = ref('')
+
+const sendBroadcast = async () => {
+  if (!broadcastText.value) return
+  try {
+    await api('/admin/game/broadcast', { method: 'POST', body: { message: broadcastText.value } })
+    broadcastText.value = '' // limpa o campo
+  } catch (err) {
+    alert("Erro ao enviar mensagem.")
+  }
+}
+
+const forceNewCards = async () => {
+  if (!confirm("TEM CERTEZA?\n\nIsso apagará todas as marcações feitas hoje por todos os usuários e fará o navegador deles piscar com uma nova cartela!")) return
+  try {
+    await api('/admin/game/force-cards', { method: 'POST' })
+    alert("Cartelas resetadas! Os clientes serão atualizados em tempo real.")
+  } catch (err) {
+    alert("Erro ao resetar cartelas.")
+  }
+}
+
+const resetSeason = async () => {
+  if (!confirm("⚠️ ALERTA VERMELHO ⚠️\n\nTem certeza absoluta que deseja ZERAR o XP da temporada de todo mundo? Esta ação não pode ser desfeita!")) return
+  
+  // Dupla confirmação para evitar cliques acidentais
+  const password = prompt("Para confirmar, digite: CONFIRMAR")
+  if (password !== 'CONFIRMAR') {
+    alert("Ação cancelada.")
+    return
+  }
+
+  try {
+    await api('/admin/game/reset-season', { method: 'POST' })
+    fetchUsers() // Atualiza a tabela do RH para mostrar tudo zerado
+    alert("Temporada resetada com sucesso! Um aviso foi enviado a todos.")
+  } catch (err) {
+    alert("Erro ao resetar temporada.")
+  }
+}
 </script>
 
 <style scoped>

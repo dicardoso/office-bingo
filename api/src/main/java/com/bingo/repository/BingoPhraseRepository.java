@@ -11,4 +11,6 @@ public interface BingoPhraseRepository extends MongoRepository<BingoPhrase, Stri
     List<BingoPhrase> findByCategoryAndActiveTrue(String category);
 
     Optional<BingoPhrase> findByText(String text);
+    List<BingoPhrase> findAllByOrderByTextAsc();
+    Optional<BingoPhrase> findByTextIgnoreCase(String text);
 }

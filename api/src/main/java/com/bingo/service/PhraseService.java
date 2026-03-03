@@ -15,11 +15,15 @@ public class PhraseService {
     private final BingoPhraseRepository phraseRepository;
 
     public List<BingoPhrase> getAllPhrases() {
-        return phraseRepository.findAll();
+        return phraseRepository.findAllByOrderByTextAsc();
     }
 
     public BingoPhrase createPhrase(PhraseRequest req) {
-        // Futura regra de negócio pode entrar aqui (validar duplicidade)
+        phraseRepository.findByTextIgnoreCase(req.text())
+                .ifPresent(p -> {
+                    throw new IllegalStateException("Esta frase já está cadastrada no sistema.");
+                });
+
         BingoPhrase phrase = new BingoPhrase();
         phrase.setText(req.text());
         phrase.setActive(req.active());

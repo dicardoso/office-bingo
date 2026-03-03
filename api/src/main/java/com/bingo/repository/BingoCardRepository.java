@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface BingoCardRepository extends MongoRepository<BingoCard, String> {
     Optional<BingoCard> findByUserIdAndGameDate(String userId, LocalDate gameDate);
     List<BingoCard> findAllByGameDateOrderByMarkedCountDesc(LocalDate gameDate);
+    void deleteByGameDate(LocalDate date);
 }
