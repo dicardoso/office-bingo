@@ -24,9 +24,9 @@ public class EmailService {
 
             helper.setFrom(fromEmail);
             helper.setTo(to);
-            System.out.println(to);
             helper.setSubject("[Office Bingo] - Recuperação de Senha");
 
+            String safeUsername = escapeHtml(username);
             String htmlMsg = """
                     <div style="background-color: #1e1e1e; color: #d4d4d4; font-family: 'Courier New', monospace; padding: 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; border: 1px solid #333;">
                         <h2 style="color: #4ade80; margin-top: 0;">> ./recover_password.sh</h2>
@@ -45,7 +45,7 @@ public class EmailService {
                             [SYSTEM_LOG] Request gerado automaticamente pelo servidor.
                         </div>
                     </div>
-                    """.formatted(username, code);
+                    """.formatted(safeUsername, code);
 
             helper.setText(htmlMsg, true);
             mailSender.send(message);
@@ -53,5 +53,16 @@ public class EmailService {
         } catch (MessagingException e) {
             throw new RuntimeException("Erro ao enviar e-mail de recuperação", e);
         }
+    }
+    private String escapeHtml(String input) {
+        if (input == null) {
+            return "";
+        }
+        return input
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }

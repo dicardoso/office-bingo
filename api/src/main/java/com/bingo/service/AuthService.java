@@ -11,11 +11,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -101,12 +104,13 @@ public class AuthService {
 
     public void requestPasswordReset(String email) {
         User user = userRepository.findByEmail(email).orElse(null);
-        System.out.println(user);
+
         if (user == null) return;
 
-        String code = String.format("%06d", new java.util.Random().nextInt(999999));
+        String code = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
+        String hashedCode = passwordEncoder.encode(code);
 
-        user.setResetCode(code);
+        user.setResetCode(hashedCode);
         user.setResetCodeExpiration(LocalDateTime.now().plusMinutes(15));
         userRepository.save(user);
 
@@ -117,7 +121,7 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Dados inválidos."));
 
-        if (user.getResetCode() == null || !user.getResetCode().equals(code)) {
+        if (user.getResetCode() == null || !passwordEncoder.matches(code, user.getResetCode())) {
             throw new IllegalArgumentException("Código de verificação inválido.");
         }
 

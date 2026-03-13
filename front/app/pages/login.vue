@@ -22,7 +22,7 @@
         [SUCCESS] {{ successMsg }}
       </div>
 
-      <form v-if="view === 'LOGIN' || view === 'REGISTER'" @submit.prevent="handleSubmit" class="space-y-5 animate-fade-in">
+      <form v-if="view === ViewEnum.LOGIN || view === ViewEnum.REGISTER" @submit.prevent="handleSubmit" class="space-y-5 animate-fade-in">
         <div class="space-y-1">
           <label class="text-xs font-mono text-ide-accent uppercase">User_ID</label>
           <input 
@@ -71,7 +71,7 @@
 
         <div class="mt-6 text-center border-t border-ide-border pt-4">
           <button type="button" @click="changeView(view === ViewEnum.LOGIN ? ViewEnum.REGISTER : ViewEnum.LOGIN)" class="text-xs text-ide-dim hover:text-white transition-colors font-mono">
-            {{ view === 'LOGIN' ? 'Create new ssh_key (Register) >>' : '<< Back to Login' }}
+            {{ view === ViewEnum.LOGIN ? 'Create new ssh_key (Register) >>' : '<< Back to Login' }}
           </button>
         </div>
       </form>
@@ -164,7 +164,7 @@ const form = ref({
   newPassword: ''
 })
 
-const changeView = (newView: string) => {
+const changeView = (newView: ViewEnum) => {
   error.value = ''
   successMsg.value = ''
   view.value = newView
@@ -174,7 +174,6 @@ const changeView = (newView: string) => {
   }
 }
 
-// 1. LOGIN / REGISTRO
 const handleSubmit = async () => {
   loading.value = true
   error.value = ''
@@ -196,7 +195,11 @@ const handleSubmit = async () => {
     
     router.push('/')
   } catch (err) {
-    error.value = err.message || 'Acesso negado: Verifique credenciais ou servidor.'
+    if (err instanceof Error) {
+       error.value = err.message || 'Acesso negado: Verifique credenciais ou servidor.'
+     } else {
+       error.value = 'Acesso negado: Verifique credenciais ou servidor.'
+     }
   } finally {
     loading.value = false
   }
@@ -241,7 +244,11 @@ const handleRecoveryReset = async () => {
     changeView(ViewEnum.LOGIN)
     successMsg.value = 'Senha alterada! Pode fazer login agora.'
   } catch (err) {
-    error.value = err.message || 'Código inválido ou expirado.'
+    if (err instanceof Error && err.message) {
+       error.value = err.message
+     } else {
+       error.value = 'Código inválido ou expirado.'
+     }
   } finally {
     loading.value = false
   }
