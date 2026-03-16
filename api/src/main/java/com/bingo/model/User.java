@@ -19,6 +19,9 @@ public class User {
     private String id;
     private String username;
     private String password;
+    private String email;
+    private String resetCode;
+    private LocalDateTime resetCodeExpiration;
     private String role = "USER";
     private String preferredTheme = "dracula";
     private LocalDateTime creationDate = LocalDateTime.now();

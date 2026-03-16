@@ -1,6 +1,8 @@
 package com.bingo.controller;
 
 import com.bingo.dto.AuthDto.*;
+import com.bingo.dto.ForgotPasswordRequest;
+import com.bingo.dto.ResetPasswordRequest;
 import com.bingo.dto.ThemeRequest;
 import com.bingo.dto.UserDto;
 import com.bingo.model.User;
@@ -44,6 +46,18 @@ public class AuthController {
         User currentUser = authService.getCurrentUser();
         authService.updateTheme(currentUser, request.theme());
 
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest req) {
+        authService.requestPasswordReset(req.email());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest req) {
+        authService.resetPassword(req.email(), req.code(), req.newPassword());
         return ResponseEntity.ok().build();
     }
 }
