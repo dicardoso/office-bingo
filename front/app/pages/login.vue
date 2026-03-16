@@ -56,7 +56,7 @@
           class="w-full bg-ide-bg border border-ide-border rounded p-3 text-white focus:border-ide-accent focus:outline-none focus:ring-1 focus:ring-ide-accent transition-all font-mono placeholder-gray-700"
           placeholder="••••••••"
           />
-          <button v-if="view === 'LOGIN'" type="button" @click="changeView(ViewEnum.RECOVER_REQ)" class="text-[10px] text-ide-dim hover:text-white transition-colors font-mono underline decoration-ide-dim border-none bg-transparent p-0">
+          <button v-if="view === ViewEnum.LOGIN" type="button" @click="changeView(ViewEnum.RECOVER_REQ)" class="text-[10px] text-ide-dim hover:text-white transition-colors font-mono underline decoration-ide-dim border-none bg-transparent p-0">
             Esqueci a Access_Key
           </button>
         </div>
