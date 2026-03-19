@@ -27,6 +27,7 @@
           <label class="text-xs font-mono text-ide-accent uppercase">User_ID</label>
           <input 
             v-model="form.username" 
+            autocomplete="username"
             type="text" 
             required 
             class="w-full bg-ide-bg border border-ide-border rounded p-3 text-white focus:border-ide-accent focus:outline-none focus:ring-1 focus:ring-ide-accent transition-all font-mono placeholder-gray-700"
@@ -51,6 +52,7 @@
           </div>
           <input 
           v-model="form.password" 
+          autocomplete="current-password"
           type="password" 
           required 
           class="w-full bg-ide-bg border border-ide-border rounded p-3 text-white focus:border-ide-accent focus:outline-none focus:ring-1 focus:ring-ide-accent transition-all font-mono placeholder-gray-700"

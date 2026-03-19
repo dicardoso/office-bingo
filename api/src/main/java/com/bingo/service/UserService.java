@@ -16,6 +16,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AdminGameService adminGameService;
     private final AuthService authService;
 
     public List<User> getAllUsers() {
@@ -65,6 +66,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
 
         user.setPreferredTheme("troll");
+        adminGameService.forceReload();
         return userRepository.save(user);
     }
     public User removeTrollTheme(String userId) {
@@ -72,6 +74,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
 
         user.setPreferredTheme("default");
+        adminGameService.forceReload();
         return userRepository.save(user);
     }
 

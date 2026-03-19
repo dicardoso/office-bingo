@@ -10,7 +10,7 @@ export function useSound() {
     sounds.error.volume = 0.4;
     sounds.click.volume = 0.1;
     sounds.win.volume = 0.1;
-    sounds.notification.volume = 0.3;
+    sounds.notification.volume = 0.2;
     sounds.pop.volume = 0.4;
 
     const play = (soundName: string | number) => {

@@ -34,6 +34,10 @@ public class AdminGameService {
         socket.convertAndSend("/topic/broadcast", Map.of("type", "RELOAD_CARDS", "message", "O Game Master embaralhou as cartelas! Sorteando novas frases..."));
     }
 
+    public void forceReload() {
+        socket.convertAndSend("/topic/broadcast", Map.of("type", "RELOAD_PAGE", "message", "O Game Master recarregou sua página"));
+    }
+
     public void broadcastMessage(String message) {
         socket.convertAndSend("/topic/broadcast", Map.of("type", "ALERT", "message", message));
     }

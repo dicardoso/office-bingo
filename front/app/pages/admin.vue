@@ -14,9 +14,9 @@
 
       <div class="flex gap-1 mb-6 border-b border-ide-border">
         <button 
-          @click="activeTab = 'phrases'" 
+          @click="activeTab = TabEnum.PHRASES" 
           class="px-4 py-2 text-sm font-mono transition-colors border-b-2"
-          :class="activeTab === 'phrases' ? 'border-ide-accent text-ide-accent bg-ide-panel' : 'border-transparent text-ide-dim hover:text-white hover:bg-ide-panel/50'"
+          :class="activeTab === TabEnum.PHRASES ? 'border-ide-accent text-ide-accent bg-ide-panel' : 'border-transparent text-ide-dim hover:text-white hover:bg-ide-panel/50'"
         >
           📄 phrases.json
         </button>
@@ -28,15 +28,15 @@
           👥 users.config
         </button>
         <button 
-          @click="activeTab = 'game'" 
+          @click="activeTab = TabEnum.GAME" 
           class="px-4 py-2 text-sm font-mono transition-colors border-b-2"
-          :class="activeTab === 'game' ? 'border-ide-accent text-ide-accent bg-ide-panel' : 'border-transparent text-ide-dim hover:text-white hover:bg-ide-panel/50'"
+          :class="activeTab === TabEnum.GAME ? 'border-ide-accent text-ide-accent bg-ide-panel' : 'border-transparent text-ide-dim hover:text-white hover:bg-ide-panel/50'"
         >
           🎮 game_master.sh
         </button>
       </div>
 
-      <div v-if="activeTab === 'phrases'" class="bg-ide-panel rounded-lg border border-ide-border shadow-2xl overflow-hidden animate-fade-in">
+      <div v-if="activeTab === TabEnum.PHRASES" class="bg-ide-panel rounded-lg border border-ide-border shadow-2xl overflow-hidden animate-fade-in">
         <div class="bg-ide-bg px-4 py-3 border-b border-ide-border flex justify-between items-center">
           <div class="flex items-center gap-4">
             <span class="text-xs font-mono text-ide-dim uppercase tracking-widest">Total: {{ phrases.length }}</span>
@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <div v-if="activeTab === 'users'" class="bg-ide-panel rounded-lg border border-ide-border shadow-2xl overflow-hidden animate-fade-in">
+      <div v-if="activeTab === TabEnum.USERS" class="bg-ide-panel rounded-lg border border-ide-border shadow-2xl overflow-hidden animate-fade-in">
         <div class="bg-ide-bg px-4 py-3 border-b border-ide-border flex justify-between items-center">
           <div class="flex items-center gap-4">
             <span class="text-xs font-mono text-ide-dim uppercase tracking-widest">Desenvolvedores: {{ users.length }}</span>
@@ -111,7 +111,7 @@
                   </div>
 
                   <span class="font-bold text-white">{{ user.username }}</span>
-                  <span v-if="user.role === 'ADMIN'" class="px-1.5 py-0.5 rounded bg-ide-accent/20 text-ide-accent text-[9px] font-bold border border-ide-accent/30">ADMIN</span>
+                  <span v-if="user.role === UserRole.ADMIN" class="px-1.5 py-0.5 rounded bg-ide-accent/20 text-ide-accent text-[9px] font-bold border border-ide-accent/30">ADMIN</span>
                 </td>
                 <td class="px-6 py-4">
                   <div class="text-xs text-ide-dim">{{ user.position }}</div>
@@ -119,7 +119,7 @@
                 </td>
                 <td class="px-6 py-4">
                   <span v-if="user.suspended" class="text-xs font-bold text-red-400 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">SUSPENSO</span>
-                  <span v-else-if="user.preferredTheme === 'troll'" class="text-xs font-bold text-[#ff00ff] bg-[#ff00ff]/10 px-2 py-1 rounded border border-[#ff00ff]/20">TROLLADO</span>
+                  <span v-else-if="user.preferredTheme === ThemeEnum.TROLL" class="text-xs font-bold text-[#ff00ff] bg-[#ff00ff]/10 px-2 py-1 rounded border border-[#ff00ff]/20">TROLLADO</span>
                   <span v-else class="text-xs font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded border border-green-500/20">ATIVO</span>
                 </td>
                 <td class="px-6 py-4 text-right">
@@ -133,7 +133,7 @@
         </div>
       </div>
 
-      <div v-if="activeTab === 'game'" class="space-y-6 animate-fade-in">
+      <div v-if="activeTab === TabEnum.GAME" class="space-y-6 animate-fade-in">
         
         <div class="bg-ide-panel rounded-lg border border-ide-border shadow-2xl overflow-hidden p-6">
           <h3 class="text-lg font-bold text-ide-text flex items-center gap-2 mb-2">
@@ -244,9 +244,9 @@
                   @click="toggleUserRole" 
                   :disabled="isSelf(selectedUser.id)"
                   class="px-3 py-1.5 rounded text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  :class="selectedUser.role === 'ADMIN' ? 'bg-ide-accent text-ide-bg' : 'bg-ide-panel border border-ide-border text-ide-dim hover:text-white'"
+                  :class="selectedUser.role === UserRole.ADMIN ? 'bg-ide-accent text-ide-bg' : 'bg-ide-panel border border-ide-border text-ide-dim hover:text-white'"
                 >
-                  {{ selectedUser.role === 'ADMIN' ? 'REMOVER ADMIN' : 'PROMOVER A ADMIN' }}
+                  {{ selectedUser.role === UserRole.ADMIN ? 'REMOVER ADMIN' : 'PROMOVER A ADMIN' }}
                 </button>
               </div>
             </div>
@@ -278,9 +278,9 @@
                   @click="toggleTrollTheme"
                   :disabled="isSelf(selectedUser.id)"
                   class="px-3 py-1.5 rounded text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  :class="selectedUser.preferredTheme === 'troll' ? 'bg-[#ff00ff] text-white hover:bg-[#cc00cc]' : 'bg-[#ff00ff]/20 text-[#ff00ff] border border-[#ff00ff]/50 hover:bg-[#ff00ff] hover:text-white'"
+                  :class="selectedUser.preferredTheme === ThemeEnum.TROLL ? 'bg-[#ff00ff] text-white hover:bg-[#cc00cc]' : 'bg-[#ff00ff]/20 text-[#ff00ff] border border-[#ff00ff]/50 hover:bg-[#ff00ff] hover:text-white'"
                 >
-                  {{ selectedUser.preferredTheme === 'troll' ? 'REMOVER CASTIGO' : 'ATIVAR MODO TROLL' }}
+                  {{ selectedUser.preferredTheme === ThemeEnum.TROLL ? 'REMOVER CASTIGO' : 'ATIVAR MODO TROLL' }}
                 </button>
               </div>
 
@@ -294,7 +294,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useSocket } from '@/composables/useSocket'
 
@@ -302,21 +302,21 @@ const api = useAPI()
 const { isConnected, connect, subscribe } = useSocket()
 
 const activeTab = ref('phrases')
-const loggedInUser = ref(null)
+const loggedInUser = ref<{ id: number } | null>(null)
 
-const phrases = ref([])
+const phrases = ref<Phrase[]>([])
 const isLoadingPhrases = ref(true)
 const showPhraseModal = ref(false)
-const editingPhraseId = ref(null)
+const editingPhraseId = ref<number | null>(null)
 const phraseForm = ref({ text: '', active: true })
 
-const onlineUsers = ref([])
+const onlineUsers = ref<string[]>([])
 const activeCount = computed(() => phrases.value.filter(p => p.active).length)
 
 const fetchPhrases = async () => {
   isLoadingPhrases.value = true
   try {
-    phrases.value = await api('/admin/phrases')
+    phrases.value = await api<Phrase[]>('/admin/phrases')
   } catch (err) {
     console.error("Erro ao buscar frases", err)
   } finally {
@@ -324,9 +324,9 @@ const fetchPhrases = async () => {
   }
 }
 
-const openPhraseModal = (phrase = null) => {
+const openPhraseModal = (phrase: Phrase | null = null) => {
   if (phrase) {
-    editingPhraseId.value = phrase.id
+    editingPhraseId.value = Number(phrase.id)
     phraseForm.value = { text: phrase.text, active: phrase.active }
   } else {
     editingPhraseId.value = null
@@ -355,7 +355,7 @@ const savePhrase = async () => {
   }
 }
 
-const togglePhraseStatus = async (phrase) => {
+const togglePhraseStatus = async (phrase: Phrase) => {
   try {
     await api(`/admin/phrases/${phrase.id}`, { method: 'PUT', body: { text: phrase.text, active: !phrase.active } })
     phrase.active = !phrase.active
@@ -364,7 +364,7 @@ const togglePhraseStatus = async (phrase) => {
   }
 }
 
-const deletePhrase = async (id) => {
+const deletePhrase = async (id: number) => {
   if (!confirm("Tem certeza que deseja excluir esta frase permanentemente?")) return;
   try {
     await api(`/admin/phrases/${id}`, { method: 'DELETE' })
@@ -374,18 +374,18 @@ const deletePhrase = async (id) => {
   }
 }
 
-const users = ref([])
+const users = ref<User[]>([])
 const isLoadingUsers = ref(true)
 const showUserModal = ref(false)
-const selectedUser = ref(null)
+const selectedUser = ref<User | null>(null)
 const userForm = ref({ careerXp: 0, seasonXp: 0 })
 
-const isSelf = (id) => loggedInUser.value?.id === id
+const isSelf = (id: string) => loggedInUser.value?.id === Number(id)
 
 const fetchUsers = async () => {
   isLoadingUsers.value = true
   try {
-    users.value = await api('/admin/users')
+    users.value = await api<User[]>('/admin/users')
     onlineUsers.value = await api('/admin/users/online');
   } catch (err) {
     console.error("Erro ao buscar usuários", err)
@@ -394,7 +394,7 @@ const fetchUsers = async () => {
   }
 }
 
-const openUserModal = (user) => {
+const openUserModal = (user: User) => {
   selectedUser.value = user
   userForm.value = { 
     careerXp: user.careerXp || 0, 
@@ -410,7 +410,11 @@ const closeUserModal = () => {
 
 const saveUserXp = async () => {
   try {
-    const updated = await api(`/admin/users/${selectedUser.value.id}/xp`, {
+    if (!selectedUser.value) {
+      alert("Nenhum usuário selecionado.");
+      return;
+    }
+    const updated = await api<User>(`/admin/users/${selectedUser.value.id}/xp`, {
       method: 'PATCH',
       body: userForm.value
     })
@@ -427,11 +431,11 @@ const saveUserXp = async () => {
 }
 
 const toggleUserRole = async () => {
-  if (isSelf(selectedUser.value.id)) return;
+  if (!selectedUser.value || isSelf(selectedUser.value.id)) return;
   
-  const newRole = selectedUser.value.role === 'ADMIN' ? 'USER' : 'ADMIN'
+  const newRole = selectedUser.value.role === UserRole.ADMIN ? UserRole.USER : UserRole.ADMIN
   try {
-    const updated = await api(`/admin/users/${selectedUser.value.id}/role`, {
+    const updated = await api<User>(`/admin/users/${selectedUser.value.id}/role`, {
       method: 'PATCH',
       body: { role: newRole }
     })
@@ -444,11 +448,11 @@ const toggleUserRole = async () => {
 }
 
 const toggleUserSuspension = async () => {
-  if (isSelf(selectedUser.value.id)) return;
+  if (!selectedUser.value || isSelf(selectedUser.value.id)) return;
 
   const newStatus = !selectedUser.value.suspended
   try {
-    const updated = await api(`/admin/users/${selectedUser.value.id}/suspend`, {
+    const updated = await api<User>(`/admin/users/${selectedUser.value.id}/suspend`, {
       method: 'PATCH',
       body: { suspended: newStatus }
     })
@@ -461,16 +465,16 @@ const toggleUserSuspension = async () => {
 }
 
 const toggleTrollTheme = async () => {
-  if (isSelf(selectedUser.value.id)) return;
+  if (!selectedUser.value || isSelf(selectedUser.value.id)) return;
 
-  const isTrolled = selectedUser.value.preferredTheme === 'troll';
+  const isTrolled = selectedUser.value.preferredTheme === ThemeEnum.TROLL;
   
   if (!isTrolled) {
     if (!confirm("Tem certeza? A tela deste usuário vai virar um pesadelo neon na próxima atualização!")) return;
   }
 
   try {
-    let updated;
+    let updated: User;
     if (isTrolled) {
       updated = await api(`/admin/users/${selectedUser.value.id}/troll`, { method: 'DELETE' })
     } else {
@@ -487,7 +491,8 @@ const toggleTrollTheme = async () => {
 }
 
 onMounted(() => {
-  loggedInUser.value = JSON.parse(localStorage.getItem('bingo_user'))
+  const user = localStorage.getItem('bingo_user');
+  loggedInUser.value = user ? JSON.parse(user) : null;
   const savedTheme = localStorage.getItem('bingo_theme')
   if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme)
   
@@ -497,7 +502,7 @@ onMounted(() => {
 
   watch(isConnected, (connected) => {
     if (connected) {
-      subscribe('/topic/presence', (msg) => {
+      subscribe('/topic/presence', (msg: { body: string }) => {
         onlineUsers.value = JSON.parse(msg.body)
       })
     }
@@ -517,7 +522,7 @@ const sendBroadcast = async () => {
   if (!message) return
   try {
     await api('/admin/game/broadcast', { method: 'POST', body: { message } })
-    broadcastText.value = '' // limpa o campo
+    broadcastText.value = ''
   } catch (err) {
     alert("Erro ao enviar mensagem.")
   }
@@ -536,7 +541,6 @@ const forceNewCards = async () => {
 const resetSeason = async () => {
   if (!confirm("⚠️ ALERTA VERMELHO ⚠️\n\nTem certeza absoluta que deseja ZERAR o XP da temporada de todo mundo? Esta ação não pode ser desfeita!")) return
   
-  // Dupla confirmação para evitar cliques acidentais
   const password = prompt("Para confirmar, digite: CONFIRMAR")
   if (password !== 'CONFIRMAR') {
     alert("Ação cancelada.")
@@ -545,7 +549,7 @@ const resetSeason = async () => {
 
   try {
     await api('/admin/game/reset-season', { method: 'POST' })
-    fetchUsers() // Atualiza a tabela do RH para mostrar tudo zerado
+    fetchUsers()
     alert("Temporada resetada com sucesso! Um aviso foi enviado a todos.")
   } catch (err) {
     alert("Erro ao resetar temporada.")
