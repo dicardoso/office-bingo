@@ -515,7 +515,6 @@ import { useSocket } from '@/composables/useSocket'
 const { play } = useSound()
 const api = useAPI()
 const router = useRouter()
-const config = useRuntimeConfig()
 const { isConnected: socketConnected, connect, subscribe } = useSocket()
 
 const currentUser = ref('')
@@ -552,6 +551,28 @@ const showThemeMenu = ref(false)
 
 const adminMessage = ref(null)
 
+const speakMessage = (text) => {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1.15; 
+    utterance.pitch = 1.0; 
+
+    const voices = window.speechSynthesis.getVoices();
+    const googleVoice = voices.find(voice => voice.name.includes('Google português do Brasil'));
+    if (googleVoice) {
+      utterance.voice = googleVoice;
+    }
+
+    window.speechSynthesis.speak(utterance);
+  } else {
+    console.warn("Seu navegador não suporta a Voz do Google :(");
+  }
+}
+
 const setupSocketListeners = () => {
   subscribe('/topic/progress', (tick) => {
     const update = JSON.parse(tick.body)
@@ -578,10 +599,18 @@ const setupSocketListeners = () => {
       if (data.type === 'RELOAD_CARDS') {
           loadData() 
       }
+      if (data.type === 'RELOAD_PAGE') {
+        window.location.reload()
+      }
       
       if (data.message) {
           adminMessage.value = data.message
-          play('notification')
+          // play('notification')
+          
+          setTimeout(() => {
+            speakMessage(data.message)
+          }, 500)
+
           setTimeout(() => { adminMessage.value = null }, 8000)
       }
   })
@@ -880,7 +909,6 @@ onMounted(async () => {
     console.log("Não foi possível validar o tema em background.")
   }
 })
-
 
 const activeSidebarTab = ref('daily')
 const seasonRanking = ref([])

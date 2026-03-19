@@ -7,9 +7,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 
 @Service
@@ -27,7 +28,7 @@ public class JwtService {
                 .claim("role", user.getRole())
                 .subject(user.getUsername())
                 .issuedAt(new Date())
-                .expiration(getEndOfDay())
+                .expiration(getNextMondayExpiration())
                 .signWith(getSignKey())
                 .compact();
     }
@@ -41,10 +42,10 @@ public class JwtService {
                 .get("role", String.class);
     }
 
-    private Date getEndOfDay() {
+    private Date getNextMondayExpiration() {
         return Date.from(LocalDate.now(zoneId)
-                .atTime(LocalTime.MAX)
-                .atZone(zoneId)
+                .with(TemporalAdjusters.next(DayOfWeek.MONDAY))
+                .atStartOfDay(zoneId)
                 .toInstant());
     }
 
