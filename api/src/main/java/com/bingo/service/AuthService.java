@@ -2,7 +2,9 @@ package com.bingo.service;
 
 import com.bingo.dto.AuthDto.*;
 import com.bingo.dto.UserDto;
+import com.bingo.model.OtpRegistration;
 import com.bingo.model.User;
+import com.bingo.repository.OtpRegistrationRepository;
 import com.bingo.repository.UserRepository;
 import com.bingo.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final JwtService jwtService;
+    private final OtpRegistrationRepository otpRegistrationRepository;
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByUsername(request.username()).isPresent()) {
@@ -32,6 +35,17 @@ public class AuthService {
 
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new RuntimeException("Este e-mail já está cadastrado em outra conta.");
+        }
+
+        OtpRegistration otp = otpRegistrationRepository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("Nenhum código solicitado para este e-mail."));
+
+        if (!otp.getCode().equals(request.code())) {
+            throw new IllegalArgumentException("Código de verificação inválido.");
+        }
+
+        if (otp.getExpiration().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("O código expirou. Solicite um novo.");
         }
 
         User user = new User();
@@ -43,6 +57,8 @@ public class AuthService {
         user.setPosition("Novato");
 
         User savedUser = userRepository.save(user);
+
+        otpRegistrationRepository.deleteByEmail(request.email());
 
         String token = jwtService.generateToken(savedUser);
 
@@ -133,5 +149,31 @@ public class AuthService {
         user.setResetCode(null);
         user.setResetCodeExpiration(null);
         userRepository.save(user);
+    }
+
+    public void requestRegistrationOtp(String email) {
+        // Bloqueia se o e-mail já for de um jogador registado
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("Este e-mail já está em uso por outro utilizador.");
+        }
+
+        // Bloqueio extra (Opcional): "Só entra quem for do escritório"
+        // if (!email.toLowerCase().endsWith("@suaempresa.com")) {
+        //     throw new IllegalArgumentException("Apenas e-mails corporativos são permitidos.");
+        // }
+
+        String code = String.format("%06d", new java.util.Random().nextInt(999999));
+
+        // Limpa códigos antigos que este e-mail possa ter pedido e não usou
+        otpRegistrationRepository.deleteByEmail(email);
+
+        OtpRegistration otp = OtpRegistration.builder()
+                .email(email)
+                .code(code)
+                .expiration(LocalDateTime.now().plusMinutes(15))
+                .build();
+
+        otpRegistrationRepository.save(otp);
+        emailService.sendRegistrationEmail(email, code);
     }
 }

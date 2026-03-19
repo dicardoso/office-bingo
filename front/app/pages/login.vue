@@ -8,9 +8,11 @@
       
       <div class="mb-6 border-l-4 border-ide-accent pl-4">
         <h1 class="text-3xl font-bold text-white font-mono tracking-tighter">
-          OFFICE_BINGO<span v-if="view === ViewEnum.REGISTER" class="text-ide-accent">_CADASTRO</span><span v-if="view.startsWith('RECOVER')" class="text-ide-error">_RECOVERY</span><span class="animate-pulse text-ide-accent">_</span>
+          OFFICE_BINGO<span v-if="view.startsWith('REGISTER')" class="text-ide-accent">_CADASTRO</span><span v-if="view.startsWith('RECOVER')" class="text-ide-error">_RECOVERY</span><span class="animate-pulse text-ide-accent">_</span>
         </h1>
-        <p v-if="view === ViewEnum.LOGIN || view === ViewEnum.REGISTER" class="text-ide-dim text-sm mt-1">Ambiente de descompressão para Devs.</p>
+        <p v-if="view === ViewEnum.LOGIN" class="text-ide-dim text-sm mt-1">Ambiente de descompressão para Devs.</p>
+        <p v-else-if="view === ViewEnum.REGISTER" class="text-ide-dim text-sm mt-1">Inicializar novo utilizador.</p>
+        <p v-else-if="view === ViewEnum.REGISTER_VERIFY" class="text-ide-success text-sm mt-1">E-mail enviado! Confirme a sua identidade.</p>
         <p v-else-if="view === ViewEnum.RECOVER_REQ" class="text-ide-dim text-sm mt-1">Recuperação de credenciais.</p>
         <p v-else-if="view === ViewEnum.RECOVER_VERIFY" class="text-ide-success text-sm mt-1">E-mail enviado! Verifique a sua caixa de entrada.</p>
       </div>
@@ -22,7 +24,7 @@
         [SUCCESS] {{ successMsg }}
       </div>
 
-      <form v-if="view === ViewEnum.LOGIN || view === ViewEnum.REGISTER" @submit.prevent="handleSubmit" class="space-y-5 animate-fade-in">
+      <form v-if="view === ViewEnum.LOGIN" @submit.prevent="handleLogin" class="space-y-5 animate-fade-in">
         <div class="space-y-1">
           <label class="text-xs font-mono text-ide-accent uppercase">User_ID</label>
           <input 
@@ -34,8 +36,37 @@
             placeholder="dev.junior"
           />
         </div>
+        
+        <div class="space-y-1">
+          <div class="flex justify-between items-end">
+            <label class="text-xs font-mono text-ide-accent uppercase">Access_Key</label>
+            <button type="button" @click="changeView(ViewEnum.RECOVER_REQ)" class="text-[10px] text-ide-dim hover:text-white transition-colors font-mono underline decoration-ide-dim border-none bg-transparent p-0">
+              Esqueci a Access_Key
+            </button>
+          </div>
+          <input 
+            v-model="form.password" 
+            autocomplete="current-password"
+            type="password" 
+            required 
+            class="w-full bg-ide-bg border border-ide-border rounded p-3 text-white focus:border-ide-accent focus:outline-none focus:ring-1 focus:ring-ide-accent transition-all font-mono placeholder-gray-700"
+            placeholder="••••••••"
+          />
+        </div>
 
-        <div v-if="view === ViewEnum.REGISTER" class="space-y-1 animate-fade-in">
+        <button :disabled="loading" type="submit" class="w-full bg-ide-accent hover:bg-sky-400 text-ide-bg font-bold py-3 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono uppercase tracking-wide">
+          {{ loading ? 'Authenticating...' : 'Connect' }}
+        </button>
+
+        <div class="mt-6 text-center border-t border-ide-border pt-4">
+          <button type="button" @click="changeView(ViewEnum.REGISTER)" class="text-xs text-ide-dim hover:text-white transition-colors font-mono">
+            Create new ssh_key (Register) >>
+          </button>
+        </div>
+      </form>
+
+      <form v-if="view === ViewEnum.REGISTER" @submit.prevent="handleRegisterOtp" class="space-y-5 animate-fade-in">
+        <div class="space-y-1">
           <label class="text-xs font-mono text-ide-accent uppercase">Corporate_Email</label>
           <input 
             v-model="form.email" 
@@ -46,34 +77,61 @@
           />
         </div>
         
-        <div class="space-y-1">
-          <div class="flex justify-between items-end">
-            <label class="text-xs font-mono text-ide-accent uppercase">Access_Key</label>
-          </div>
-          <input 
-          v-model="form.password" 
-          autocomplete="current-password"
-          type="password" 
-          required 
-          class="w-full bg-ide-bg border border-ide-border rounded p-3 text-white focus:border-ide-accent focus:outline-none focus:ring-1 focus:ring-ide-accent transition-all font-mono placeholder-gray-700"
-          placeholder="••••••••"
-          />
-          <button v-if="view === ViewEnum.LOGIN" type="button" @click="changeView(ViewEnum.RECOVER_REQ)" class="text-[10px] text-ide-dim hover:text-white transition-colors font-mono underline decoration-ide-dim border-none bg-transparent p-0">
-            Esqueci a Access_Key
-          </button>
-        </div>
-
-        <button 
-          :disabled="loading" 
-          type="submit" 
-          class="w-full bg-ide-accent hover:bg-sky-400 text-ide-bg font-bold py-3 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono uppercase tracking-wide"
-        >
-          {{ loading ? 'Authenticating...' : (view === ViewEnum.REGISTER ? 'Initialize User' : 'Connect') }}
+        <button :disabled="loading" type="submit" class="w-full bg-ide-accent hover:bg-sky-400 text-ide-bg font-bold py-3 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono uppercase tracking-wide">
+          {{ loading ? 'Processando...' : 'Receber Código de Acesso' }}
         </button>
 
         <div class="mt-6 text-center border-t border-ide-border pt-4">
-          <button type="button" @click="changeView(view === ViewEnum.LOGIN ? ViewEnum.REGISTER : ViewEnum.LOGIN)" class="text-xs text-ide-dim hover:text-white transition-colors font-mono">
-            {{ view === ViewEnum.LOGIN ? 'Create new ssh_key (Register) >>' : '<< Back to Login' }}
+          <button type="button" @click="changeView(ViewEnum.LOGIN)" class="text-xs text-ide-dim hover:text-white transition-colors font-mono">
+            << Back to Login
+          </button>
+        </div>
+      </form>
+
+      <form v-if="view === ViewEnum.REGISTER_VERIFY" @submit.prevent="handleRegisterFinalize" class="space-y-5 animate-fade-in">
+        <p class="text-xs text-ide-dim mb-2 text-center">Enviado para: <span class="font-bold text-white">{{ form.email }}</span></p>
+
+        <div class="space-y-1">
+          <label class="text-xs font-mono text-ide-accent uppercase">Auth_Code (OTP)</label>
+          <input 
+            v-model="form.code" 
+            type="text" 
+            maxlength="6"
+            required 
+            class="w-full bg-black border border-ide-border rounded p-3 text-center text-2xl tracking-[0.5em] text-ide-accent font-bold focus:border-ide-accent focus:outline-none focus:ring-1 focus:ring-ide-accent transition-all font-mono"
+            placeholder="000000"
+          />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-mono text-ide-accent uppercase">User_ID (Username)</label>
+          <input 
+            v-model="form.username" 
+            type="text" 
+            required 
+            class="w-full bg-ide-bg border border-ide-border rounded p-3 text-white focus:border-ide-accent focus:outline-none focus:ring-1 focus:ring-ide-accent transition-all font-mono placeholder-gray-700"
+            placeholder="ex: jose.silva"
+          />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-mono text-ide-accent uppercase">Access_Key (Password)</label>
+          <input 
+            v-model="form.password" 
+            type="password" 
+            required 
+            class="w-full bg-ide-bg border border-ide-border rounded p-3 text-white focus:border-ide-accent focus:outline-none focus:ring-1 focus:ring-ide-accent transition-all font-mono placeholder-gray-700"
+            placeholder="Nova Senha"
+          />
+        </div>
+
+        <button :disabled="loading || form.code.length < 6" type="submit" class="w-full bg-ide-success hover:bg-green-400 text-ide-bg font-bold py-3 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono uppercase tracking-wide">
+          {{ loading ? 'A criar conta...' : 'Initialize User' }}
+        </button>
+
+        <div class="text-center pt-2 flex flex-col gap-2">
+          <button type="button" @click="changeView(ViewEnum.REGISTER)" class="text-[10px] text-ide-dim hover:text-white transition-colors font-mono">
+            [ Alterar E-mail ]
           </button>
         </div>
       </form>
@@ -102,7 +160,6 @@
       </form>
 
       <form v-if="view === ViewEnum.RECOVER_VERIFY" @submit.prevent="handleRecoveryReset" class="space-y-5 animate-fade-in">
-        
         <div class="space-y-1">
           <label class="text-xs font-mono text-ide-accent uppercase">Auth_Code (OTP)</label>
           <input 
@@ -149,6 +206,7 @@ const router = useRouter()
 enum ViewEnum {
   LOGIN = 'LOGIN',
   REGISTER = 'REGISTER',
+  REGISTER_VERIFY = 'REGISTER_VERIFY',
   RECOVER_REQ = 'RECOVER_REQ',
   RECOVER_VERIFY = 'RECOVER_VERIFY',
 }
@@ -162,6 +220,7 @@ const form = ref({
   username: '',
   password: '',
   email: '',
+  code: '',
   recoveryCode: '',
   newPassword: ''
 })
@@ -171,37 +230,70 @@ const changeView = (newView: ViewEnum) => {
   successMsg.value = ''
   view.value = newView
   
-  if (newView === ViewEnum.LOGIN || newView === ViewEnum.REGISTER) {
+  if (newView === ViewEnum.LOGIN) {
     sessionStorage.removeItem('recovery_email')
+    sessionStorage.removeItem('register_email')
+    form.value.password = ''
   }
 }
 
-const handleSubmit = async () => {
+const handleLogin = async () => {
   loading.value = true
   error.value = ''
-  
   try {
-    const endpoint = view.value === ViewEnum.REGISTER ? '/auth/register' : '/auth/login'
-    
-    const payload = view.value === ViewEnum.REGISTER 
-      ? { username: form.value.username, email: form.value.email, password: form.value.password }
-      : { username: form.value.username, password: form.value.password }
-      
-    const response = await api(endpoint, {
+    const response = await api('/auth/login', {
       method: 'POST',
-      body: payload
+      body: { username: form.value.username, password: form.value.password }
     })
-
     localStorage.setItem('bingo_token', response.token)
     localStorage.setItem('bingo_user', JSON.stringify(response.user))
+    router.push('/')
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Acesso negado: Verifique credenciais ou servidor.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleRegisterOtp = async () => {
+  loading.value = true
+  error.value = ''
+  try {
+    await api('/auth/register-otp', {
+      method: 'POST',
+      body: { email: form.value.email }
+    })
+    sessionStorage.setItem('register_email', form.value.email)
+    changeView(ViewEnum.REGISTER_VERIFY)
+    successMsg.value = 'Código enviado! Verifique o seu e-mail corporativo.'
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Erro ao processar pedido. Tente novamente.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleRegisterFinalize = async () => {
+  loading.value = true
+  error.value = ''
+  try {
+    const response = await api('/auth/register', {
+      method: 'POST',
+      body: { 
+        username: form.value.username, 
+        email: form.value.email, 
+        password: form.value.password,
+        code: form.value.code
+      }
+    })
+    
+    localStorage.setItem('bingo_token', response.token)
+    localStorage.setItem('bingo_user', JSON.stringify(response.user))
+    sessionStorage.removeItem('register_email')
     
     router.push('/')
   } catch (err) {
-    if (err instanceof Error) {
-       error.value = err.message || 'Acesso negado: Verifique credenciais ou servidor.'
-     } else {
-       error.value = 'Acesso negado: Verifique credenciais ou servidor.'
-     }
+    error.value = err instanceof Error ? err.message : 'Erro ao concluir registo. Código inválido?'
   } finally {
     loading.value = false
   }
@@ -216,7 +308,6 @@ const handleRecoveryRequest = async () => {
       body: { email: form.value.email }
     })
     sessionStorage.setItem('recovery_email', form.value.email)
-    
     changeView(ViewEnum.RECOVER_VERIFY)
   } catch (err) {
     error.value = 'Erro ao processar pedido. Tente novamente.'
@@ -246,11 +337,7 @@ const handleRecoveryReset = async () => {
     changeView(ViewEnum.LOGIN)
     successMsg.value = 'Senha alterada! Pode fazer login agora.'
   } catch (err) {
-    if (err instanceof Error && err.message) {
-       error.value = err.message
-     } else {
-       error.value = 'Código inválido ou expirado.'
-     }
+    error.value = err instanceof Error && err.message ? err.message : 'Código inválido ou expirado.'
   } finally {
     loading.value = false
   }
@@ -261,6 +348,12 @@ onMounted(() => {
   if (savedRecoveryEmail) {
     form.value.email = savedRecoveryEmail
     view.value = ViewEnum.RECOVER_VERIFY
+  }
+
+  const savedRegisterEmail = sessionStorage.getItem('register_email')
+  if (savedRegisterEmail) {
+    form.value.email = savedRegisterEmail
+    view.value = ViewEnum.REGISTER_VERIFY
   }
 })
 </script>

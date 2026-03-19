@@ -54,6 +54,37 @@ public class EmailService {
             throw new RuntimeException("Erro ao enviar e-mail de recuperação", e);
         }
     }
+    public void sendRegistrationEmail(String to, String code) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("[Office Bingo] - Código de Verificação");
+
+            String htmlMsg = """
+                    <div style="background-color: #1e1e1e; color: #d4d4d4; font-family: 'Courier New', monospace; padding: 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; border: 1px solid #333;">
+                        <h2 style="color: #4ade80; margin-top: 0;">> ./verify_email.sh</h2>
+                        <p>Bem-vindo(a) ao Office Bingo!</p>
+                        <p>Para concluir a criação da sua conta, utilize o código de autorização abaixo:</p>
+                        
+                        <div style="background-color: #000000; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #4ade80; border-radius: 4px; margin: 20px 0;">
+                            %s
+                        </div>
+                        
+                        <p style="color: #ef4444; font-size: 12px;">⚠️ Este código expira em 15 minutos.</p>
+                        <p style="color: #888; font-size: 12px; margin-top: 30px;">Se você não solicitou esta criação de conta, por favor ignore este e-mail.</p>
+                    </div>
+                    """.formatted(code);
+
+            helper.setText(htmlMsg, true);
+            mailSender.send(message);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao enviar e-mail de registro", e);
+        }
+    }
     private String escapeHtml(String input) {
         if (input == null) {
             return "";

@@ -1,10 +1,7 @@
 package com.bingo.controller;
 
+import com.bingo.dto.*;
 import com.bingo.dto.AuthDto.*;
-import com.bingo.dto.ForgotPasswordRequest;
-import com.bingo.dto.ResetPasswordRequest;
-import com.bingo.dto.ThemeRequest;
-import com.bingo.dto.UserDto;
 import com.bingo.model.User;
 import com.bingo.repository.UserRepository;
 import com.bingo.service.AuthService;
@@ -58,6 +55,12 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest req) {
         authService.resetPassword(req.email(), req.code(), req.newPassword());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/register-otp")
+    public ResponseEntity<Void> requestRegisterOtp(@RequestBody RegisterOtpRequest req) {
+        authService.requestRegistrationOtp(req.email());
         return ResponseEntity.ok().build();
     }
 }
