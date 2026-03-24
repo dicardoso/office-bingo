@@ -1,6 +1,8 @@
 <template>
   <div class="min-h-screen bg-ide-bg p-4 md:p-8">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto">
+
+      
       
       <header class="flex justify-between items-end mb-8 border-b border-ide-border pb-4">
         <div>
@@ -136,7 +138,71 @@
         </div>
       </transition>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <aside class="hidden lg:flex flex-col gap-4 lg:col-span-1 rounded-lg border border-ide-border">
+          
+          <div class="bg-ide-bg px-4 py-2 border-b-2 border-ide-accent flex items-center gap-2 opacity-90">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-ide-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+            <span class="text-xs font-mono font-bold text-ide-accent uppercase tracking-widest">Marketplace</span>
+          </div>
+
+          <div class="bg-ide-panel rounded-lg border border-ide-border p-4 group hover:border-red-500 transition-all hover:shadow-[0_0_15px_rgba(239,68,68,0.15)] flex flex-col items-center text-center">
+            
+            <div class="w-12 h-12 bg-ide-bg rounded-lg border border-ide-border flex items-center justify-center mb-3 group-hover:scale-110 transition-transform relative">
+              <span class="text-xl group-hover:animate-bounce">🐴</span>
+              
+              <div class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-ide-panel transform scale-110">
+                {{ lePatadasCount }}
+              </div>
+            </div>
+            
+            <h4 class="text-xs font-bold text-red-400 font-mono mb-1">LePatadas v1.0</h4>
+            <p class="text-[10px] text-ide-dim font-mono mb-3 leading-tight">Contador oficial de patadas distribuídas por Letícia.</p>
+            
+            <button 
+              @click="registrarPatada"
+              class="w-full bg-red-500/10 text-red-400 border border-red-500/30 rounded py-1.5 text-[10px] font-bold font-mono hover:bg-red-500 hover:text-white transition-colors active:scale-95"
+            >
+              [ +1 PATADA ]
+            </button>
+          </div>
+
+          <div class="bg-ide-panel rounded-lg border border-ide-border p-4 group hover:border-orange-500 transition-all hover:shadow-[0_0_15px_rgba(249,115,22,0.15)] flex flex-col items-center text-center">
+            
+            <div class="w-12 h-12 bg-ide-bg rounded-lg border border-ide-border flex items-center justify-center mb-3 group-hover:scale-110 transition-transform relative">
+              <span class="text-xl group-hover:animate-spin">🙄</span>
+              
+              <div class="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-ide-panel transform scale-110">
+                {{ adilsonSacoCount }}
+              </div>
+            </div>
+            
+            <h4 class="text-xs font-bold text-orange-400 font-mono mb-1">Adilson Tracker</h4>
+            <p class="text-[10px] text-ide-dim font-mono mb-3 leading-tight">Vezes que o Adilson encheu o saco de alguém hoje.</p>
+            
+            <button 
+              @click="registrarAdilson"
+              class="w-full bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded py-1.5 text-[10px] font-bold font-mono hover:bg-orange-500 hover:text-white transition-colors active:scale-95"
+            >
+              [ +1 RECLAMAÇÃO ]
+            </button>
+          </div>
+
+          <a href="#" class="bg-ide-panel rounded-lg border border-ide-border p-4 group hover:border-ide-accent transition-all hover:shadow-[0_0_15px_rgba(var(--ide-accent),0.1)] flex flex-col items-center text-center cursor-pointer">
+            <div class="w-12 h-12 bg-ide-bg rounded-lg border border-ide-border border-dashed flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <span class="text-xl opacity-50 group-hover:opacity-100">🚀</span>
+            </div>
+            <h4 class="text-xs font-bold text-ide-text font-mono mb-1">Sua Empresa</h4>
+            <p class="text-[10px] text-ide-dim font-mono mb-3">O seu mini-app ou link de afiliado encaixa aqui.</p>
+            <button class="w-full bg-ide-bg text-ide-dim border border-ide-border rounded py-1 text-[10px] font-bold font-mono group-hover:bg-ide-accent group-hover:text-ide-bg transition-colors">
+              [ INSTALL ]
+            </button>
+          </a>
+
+          <div class="mt-auto text-center">
+            <span class="text-[9px] font-mono text-ide-dim opacity-50">ADS_MODULE_v1.0</span>
+          </div>
+        </aside>
         
         <main class="lg:col-span-2 space-y-4">
           <div class="bg-ide-panel rounded-lg border border-ide-border shadow-xl overflow-hidden">
@@ -177,7 +243,7 @@
           </div>
         </main>
 
-        <aside class="bg-ide-panel rounded-lg border border-ide-border h-fit shadow-xl overflow-hidden">
+        <aside class="lg:col-span-1 bg-ide-panel rounded-lg border border-ide-border h-fit shadow-xl overflow-hidden">
           
           <div class="bg-ide-bg border-b border-ide-border flex">
             <button 
@@ -933,6 +999,36 @@ const getRankColor = (index) => {
   if (index === 1) return 'text-gray-300 font-bold'   // 2º
   if (index === 2) return 'text-amber-600 font-bold'  // 3º
   return 'text-ide-dim'                               // Resto
+}
+
+const lePatadasCount = ref(0) // Começa em 0
+
+const registrarPatada = () => {
+  // Toca um som de clique/pop para dar feedback
+  play('pop')
+  
+  // Aumenta o contador na tela
+  lePatadasCount.value++
+  
+  // OPCIONAL: Se você for o Game Master (ADMIN) e quiser que a tela de todo o escritório
+  // receba um alerta quando a Letícia der uma patada épica:
+  /*
+  if (currentUser.value.role === 'ADMIN' && lePatadasCount.value % 5 === 0) {
+     api('/admin/game/broadcast', { 
+         method: 'POST', 
+         body: { message: `ALERTA: A Letícia acaba de atingir a marca de ${lePatadasCount.value} patadas hoje!` } 
+     })
+  }
+  */
+}
+
+const adilsonSacoCount = ref(0)
+
+const registrarAdilson = () => {
+  // O som 'error' combina perfeitamente com alguém a encher o saco 😂
+  play('error') 
+  
+  adilsonSacoCount.value++
 }
 
 </script>
